@@ -11,39 +11,20 @@
         android:label="content_main"
         tools:layout="@layout/content_main" />
     <fragment
-        android:id="@+id/loadPlanFragment"
-        android:name="com.example.mealplanner.LoadPlanFragment"
-        android:label="fragment_load_plan"
-        tools:layout="@layout/fragment_load_plan" >
+        android:id="@+id/editRecipeFragment"
+        android:name="com.example.mealplanner.EditRecipeFragment"
+        android:label="fragment_edit_recipes"
+        tools:layout="@layout/fragment_edit_recipes" >
         <action
-            android:id="@+id/action_loadPlanFragment_to_mainActivity"
+            android:id="@+id/action_editRecipeFragment_to_mainActivity"
             app:destination="@id/mainActivity" />
     </fragment>
     <fragment
-        android:id="@+id/savePlanFragment"
-        android:name="com.example.mealplanner.SavePlanFragment"
-        android:label="fragment_save_plan"
-        tools:layout="@layout/fragment_save_plan" >
+        android:id="@+id/calendarFragment"
+        android:name="com.example.mealplanner.CalendarFragment"
+        android:label="CalendarFragment" >
         <action
-            android:id="@+id/action_savePlanFragment_to_mainActivity"
+            android:id="@+id/action_calendarFragment_to_mainActivity"
             app:destination="@id/mainActivity" />
-    </fragment>
-    <fragment
-        android:id="@+id/savedRecipesFragment"
-        android:name="com.example.mealplanner.SavedRecipesFragment"
-        android:label="fragment_saved_recipes"
-        tools:layout="@layout/fragment_saved_recipes" >
-        <action
-            android:id="@+id/action_savedRecipesFragment_to_mainActivity"
-            app:destination="@id/mainActivity" />
-    </fragment>
-    <fragment
-        android:id="@+id/savedRecipesEditFragment"
-        android:name="com.example.mealplanner.SavedRecipesEditFragment"
-        android:label="fragment_saved_recipes_edit"
-        tools:layout="@layout/fragment_saved_recipes_edit" >
-        <action
-            android:id="@+id/action_savedRecipesEditFragment_to_savedRecipesFragment"
-            app:destination="@id/savedRecipesFragment" />
     </fragment>
 </navigation>

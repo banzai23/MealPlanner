@@ -13,17 +13,6 @@
         android:id="@+id/action_new"
         android:title="@string/menu_new"
         android:orderInCategory="2"
-        app:showAsAction="never"/>
-    <item
-        android:id="@+id/action_save"
-        android:title="@string/menu_save"
-        android:orderInCategory="3"
-        app:showAsAction="never"/>
-
-    <item
-        android:id="@+id/action_load"
-        android:title="@string/menu_load"
-        android:orderInCategory="4"
-        app:showAsAction="never"/>
+        app:showAsAction="ifRoom"/>
 
 </menu>

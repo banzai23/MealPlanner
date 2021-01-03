@@ -16,7 +16,6 @@ import com.example.mealplanner.databinding.ActivityMainBinding
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
-import java.io.File
 import java.io.FileNotFoundException
 import java.io.InputStream
 import java.text.DateFormat
@@ -25,7 +24,6 @@ import java.util.*
 
 const val DEFAULT_NUM_DAYS = 7
 const val DEFAULT_RECIPE_FILE = "savedRecipes.json"
-const val DEFAULT_PLAN_DIR = "plans"
 const val DEFAULT_PLAN_FILE = "defaultPlan.json"
 
 lateinit var mealPlanList: MealPlan
@@ -36,28 +34,19 @@ var assetsLoaded: Boolean = false
 data class Recipe(var recipe: MutableList<RecipeX>)
 @Serializable
 data class MealPlan(var recipe: MutableList<RecipeX>, var startDate: Long) {
-	fun getSelectedStartDate(day_forward: Int): String {
+	fun getDayByPosition(day_forward: Int): String {
 		val gc = GregorianCalendar()
 		gc.timeInMillis = startDate
+		while (gc.get(Calendar.DAY_OF_WEEK) != 1)
+			gc.roll(GregorianCalendar.DATE, false)
 		gc.add(Calendar.DATE, day_forward)
 		val df: DateFormat = SimpleDateFormat("MM/dd E")
 		return df.format(gc.time)
 	}
 	fun getDefaultSaveDate(): String {
 		val gc = GregorianCalendar()
-		var df = SimpleDateFormat("MMM d-")
-		val str1: String
-		val str2: String
 		gc.timeInMillis = startDate
-		gc.add(Calendar.DATE, 0)
-
-		str1 = df.format(gc.time)
-
-		gc.add(Calendar.DATE, 6)
-		df = SimpleDateFormat("d, yyyy")
-		str2 = df.format(gc.time)
-
-		return (str1+str2)
+		return gc.get(Calendar.WEEK_OF_YEAR).toString()
 	}
 }
 @Serializable
@@ -81,9 +70,6 @@ class MainActivity : AppCompatActivity(), ActivityInterface {
 			} catch (e: FileNotFoundException) {
 				this.resources.openRawResource(R.raw.savedrecipes)
 			}
-
-			val path = File(this.filesDir.path+File.separatorChar+DEFAULT_PLAN_DIR)
-			path.mkdirs()   // if DEFAULT_PLAN_DIR doesn't exist, create it now
 
 			var inputString = inputStream.bufferedReader().use { it.readText() }
 			recipeList = Json.decodeFromString(inputString)
@@ -123,7 +109,7 @@ class MainActivity : AppCompatActivity(), ActivityInterface {
 	}
 	override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
 		R.id.action_new -> {
-			fragmentTransaction(NewPlanFragment(), "newPlan")
+			fragmentTransaction(CalendarFragment(), "calendar")
 			true
 		}
 		R.id.action_random -> {
@@ -132,14 +118,6 @@ class MainActivity : AppCompatActivity(), ActivityInterface {
 				mealPlanList.recipe[x] = recipeList.recipe[random].copy()
 				activityBinding.contentMain.recyclerMP.adapter!!.notifyItemRangeChanged(0, DEFAULT_NUM_DAYS)
 			}
-			true
-		}
-		R.id.action_save -> {
-			fragmentTransaction(SavePlanFragment(), "savePlan")
-			true
-		}
-		R.id.action_load -> {
-			fragmentTransaction(LoadPlanFragment(), "loadPlan")
 			true
 		}
 		else -> {
@@ -299,7 +277,7 @@ class RecyclerAdapterDate() :
 		return ViewHolder(inflatedView)
 	}
 	override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-		holder.tvItem.text = mealPlanList.getSelectedStartDate(position)
+		holder.tvItem.text = mealPlanList.getDayByPosition(position)
 	}
 }
 fun setItemTouchHelper(recycler: RecyclerView, mutableList: MutableList<RecipeX>): ItemTouchHelper {
