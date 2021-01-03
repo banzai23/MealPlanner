@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/layout_new_plan"
+    android:layout_width="match_parent"
+    android:layout_height="400dp"
+    android:layout_gravity="center_horizontal"
+    android:background="@drawable/border_plans"
+    android:orientation="vertical"
+    android:padding="10dp"
+    tools:context=".NewPlanFragment">
+
+    <CalendarView
+        android:id="@+id/calendarView"
+        android:layout_width="362dp"
+        android:layout_height="339dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/btn_SelectDate"
+        style="@style/ButtonMP"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/str_select"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/calendarView" />
+
+    <Button
+        android:id="@+id/btn_CancelCal"
+        style="@style/ButtonMP"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/str_cancel"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/calendarView" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

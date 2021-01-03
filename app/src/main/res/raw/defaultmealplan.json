@@ -1,0 +1,33 @@
+{
+	"recipe": [
+	{
+		"name": "Peanut Butter Jelly",
+		"ingredients": "1 peanut\n2 jelly"
+	},
+	{
+		"name": "Chicken and Rice",
+		"ingredients": "1 chicken\n2 rice"
+	},
+	{
+		"name": "Chicken and Mashed Potatoes",
+		"ingredients": "1 chicken\n2 potatoes"
+	},
+	{
+		"name": "Quinoa Salad",
+		"ingredients": "quinoa salad duh"
+	},
+	{
+		"name": "Tacos",
+		"ingredients": "1 taco\n2 beef"
+	},
+	{
+		"name": "Baked Potatoes",
+		"ingredients": "Potatoes"
+	},
+	{
+		"name": "Hamburgers",
+		"ingredients": "Beef N Cheese"
+	}
+	],
+	"startDate": 1609621167987
+}

@@ -1,0 +1,28 @@
+<resources>
+    <string name="app_name">MealPlanner</string>
+    <string name="action_settings">Settings</string>
+    <string name="str_recipes">Recipes</string>
+    <string name="str_load_mp">Load</string>
+    <string name="str_save_mp">Save</string>
+    <string name="str_new">New</string>
+    <string name="str_randomize">Random</string>
+    <string name="str_add_recipe">Add New</string>
+    <string name="str_del_recipe">Delete</string>
+    <string name="str_discard">Discard</string>
+    <string name="str_save_changes">Save Changes</string>
+    <string name="str_goto_recipes">Recipes</string>
+    <string name="str_cancel">Cancel</string>
+    <string name="str_save">Save</string>
+    <string name="str_load">Load</string>
+    <string name="str_sre_title">Recipe</string>
+    <string name="str_sre_save">Save</string>
+    <string name="str_sre_cancel">Cancel</string>
+    <string name="str_select">Select</string>
+
+    <!-- menu strings -->
+    <string name="menu_new">Calendar</string>
+    <string name="menu_random">Random</string>
+    <string name="menu_save">Save</string>
+    <string name="menu_load">Load</string>
+
+</resources>

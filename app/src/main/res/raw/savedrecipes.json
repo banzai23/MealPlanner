@@ -1,0 +1,64 @@
+{
+	"recipe": [
+	{
+		"name": "Peanut Butter Jelly",
+		"ingredients": "1 peanut\n2 jelly"
+	},
+	{
+		"name": "Chicken and Rice",
+		"ingredients": "1 chicken\n2 rice"
+	},
+	{
+		"name": "Chicken and Mashed Potatoes",
+		"ingredients": "1 chicken\n2 potatoes"
+	},
+	{
+		"name": "Quinoa Salad",
+		"ingredients": "quinoa salad duh"
+	},
+	{
+		"name": "Tacos",
+		"ingredients": "1 taco\n2 beef"
+	},
+	{
+		"name": "Baked Potatoes",
+		"ingredients": "Potatoes"
+	},
+	{
+		"name": "Hamburgers",
+		"ingredients": "Beef N Cheese"
+	},
+	{
+		"name": "Hot Dogs",
+		"ingredients": "Hot Dogs"
+	},
+	{
+		"name": "Breakfast for Dinner",
+		"ingredients": "Eggs and Sausage"
+	},
+	{
+		"name": "Taco Soup",
+		"ingredients": "1 can Kidney beans\n1 can Black beans"
+	},
+	{
+		"name": "Caesar Salad",
+		"ingredients": "Romaine and Caesar dressing"
+	},
+	{
+		"name": "Steak and Potatoes",
+		"ingredients": "1 steak\n2 potatoes"
+	},
+	{
+		"name": "Soup, Salad, and Breadsticks",
+		"ingredients": "SSB"
+	},
+	{
+		"name": "Bacon, Lettuce, Tomato",
+		"ingredients": "Bacon, Lettuce, Tomatoes"
+	},
+	{
+		"name": "Cilantro Kale Advocado",
+		"ingredients": "Cilantro\nKale\nAvocado"
+	}
+	]
+}
