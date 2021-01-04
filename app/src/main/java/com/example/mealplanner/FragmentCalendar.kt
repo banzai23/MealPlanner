@@ -49,7 +49,7 @@ class CalendarFragment : Fragment(R.layout.fragment_calendar) {
 					mealPlanList = Json.decodeFromString(inputString)
 				} catch (e: FileNotFoundException) {
 					for (x in 0 until mealPlanList.recipe.size) {
-						mealPlanList.recipe[x].name = " "
+						mealPlanList.recipe[x].name = "                               "
 						mealPlanList.recipe[x].ingredients = " "
 					}
 				}

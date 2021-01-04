@@ -313,4 +313,4 @@ fun setItemTouchHelper(recycler: RecyclerView, mutableList: MutableList<RecipeX>
 }
 
 // TODO: Set up a settings file
-// TODO:
+// TODO: Fix recipe view
