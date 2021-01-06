@@ -14,5 +14,10 @@
         android:title="@string/menu_new"
         android:orderInCategory="2"
         app:showAsAction="ifRoom"/>
+    <item
+        android:id="@+id/action_list"
+        android:title="@string/menu_list"
+        android:orderInCategory="3"
+        app:showAsAction="ifRoom"/>
 
 </menu>

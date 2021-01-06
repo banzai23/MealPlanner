@@ -60,6 +60,9 @@ class CalendarFragment : Fragment(R.layout.fragment_calendar) {
 			// done loading, now update recyclers
 			updateAct.updateRecyclerDate(selectedDateToSunday)
 			updateAct.updateRecyclerMP()
+
+			val actInt: ActivityInterface = context as ActivityInterface
+			actInt.saveDefaultPlan()
 			requireActivity().supportFragmentManager.popBackStack()
 		}
 		binding.btnCancelCal.setOnClickListener {

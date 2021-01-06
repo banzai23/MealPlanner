@@ -22,7 +22,6 @@
     <!-- menu strings -->
     <string name="menu_new">Calendar</string>
     <string name="menu_random">Random</string>
-    <string name="menu_save">Save</string>
-    <string name="menu_load">Load</string>
+    <string name="menu_list">Shopping List</string>
 
 </resources>
