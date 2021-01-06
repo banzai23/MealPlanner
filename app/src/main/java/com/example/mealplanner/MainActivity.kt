@@ -352,4 +352,3 @@ private class SetDragListener(val posOfView: Int, val recycler: RecyclerView) : 
 	}
 }
 // TODO: Set up a settings file
-// TODO: Try to set up where a drop event triggers a DataSetChange or ItemRangeChange
