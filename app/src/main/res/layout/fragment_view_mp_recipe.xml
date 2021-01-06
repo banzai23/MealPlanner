@@ -3,11 +3,12 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/layout_edit_recipes"
+    android:id="@+id/layout_mp_recipe"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/white"
-    tools:context=".EditRecipeFragment">
+    tools:context=".ViewMPRecipeFragment">
+
 
     <TextView
         android:id="@+id/hideActivityInput"
@@ -17,7 +18,7 @@
         android:focusable="true"/>
 
     <TextView
-        android:id="@+id/tv_recipe"
+        android:id="@+id/tv_mp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/str_sre_title"
@@ -27,36 +28,19 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <com.google.android.material.textfield.TextInputLayout
+    <TextView
+        android:id="@+id/tv_ingredients"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/tv_recipe">
-    <com.google.android.material.textfield.TextInputEditText
-        android:id="@+id/et_recipe"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:layout_marginTop="36dp"
-        android:inputType="textMultiLine"
-        android:hint="Recipe Ingredients"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tv_recipe" />
-    </com.google.android.material.textfield.TextInputLayout>
-    <Button
-        android:id="@+id/btn_Save"
-        style="@style/ButtonMP"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/str_sre_save"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/tv_mp" />
 
     <Button
-        android:id="@+id/btn_Cancel"
+        android:id="@+id/btn_Back"
         style="@style/ButtonMP"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/str_sre_cancel"
+        android:text="Back"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintBottom_toBottomOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

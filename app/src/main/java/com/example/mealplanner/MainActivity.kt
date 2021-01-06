@@ -2,10 +2,9 @@ package com.example.mealplanner
 
 import android.content.ClipData
 import android.content.ClipDescription
-import android.graphics.Color
+import android.content.Context
 import android.os.Bundle
 import android.view.*
-import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
@@ -15,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.mealplanner.databinding.ActivityMainBinding
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.io.FileNotFoundException
 import java.io.InputStream
@@ -25,6 +25,7 @@ import java.util.*
 const val DEFAULT_NUM_DAYS = 7
 const val DEFAULT_RECIPE_FILE = "savedRecipes.json"
 const val DEFAULT_PLAN_FILE = "defaultPlan.json"
+const val DEFAULT_EMPTY_RECIPE = "                               "
 
 lateinit var mealPlanList: MealPlan
 lateinit var recipeList: Recipe
@@ -33,29 +34,19 @@ var assetsLoaded: Boolean = false
 @Serializable
 data class Recipe(var recipe: MutableList<RecipeX>)
 @Serializable
-data class MealPlan(var recipe: MutableList<RecipeX>, var startDate: Long) {
-	fun getDayByPosition(day_forward: Int): String {
-		val gc = GregorianCalendar()
-		gc.timeInMillis = startDate
-		while (gc.get(Calendar.DAY_OF_WEEK) != 1)
-			gc.roll(GregorianCalendar.DATE, false)
-		gc.add(Calendar.DATE, day_forward)
-		val df: DateFormat = SimpleDateFormat("MM/dd E")
-		return df.format(gc.time)
-	}
-	fun getDefaultSaveDate(): String {
-		val gc = GregorianCalendar()
-		gc.timeInMillis = startDate
-		return gc.get(Calendar.WEEK_OF_YEAR).toString()
+data class MealPlan(var recipe: MutableList<RecipeX>, var startDate: Long)
+@Serializable
+data class RecipeX(var name: String = "", var ingredients: String = "") {
+	fun copyRecipe(): RecipeX {
+		return RecipeX(name, ingredients)
 	}
 }
-@Serializable
-data class RecipeX(var name: String = "", var ingredients: String = "")
 
 interface ActivityInterface {
 	fun updateRecyclerDate(date: Long)
 	fun updateRecyclerMP()
 	fun fragmentTransaction(fragment: Fragment, tag: String)
+	fun saveDefaultPlan()
 }
 class MainActivity : AppCompatActivity(), ActivityInterface {
 	private lateinit var activityBinding: ActivityMainBinding
@@ -94,6 +85,8 @@ class MainActivity : AppCompatActivity(), ActivityInterface {
 
 		val binding = activityBinding.contentMain
 
+		window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN)
+
 		binding.recyclerDate.layoutManager = LinearLayoutManager(this)
 		binding.recyclerDate.adapter = RecyclerAdapterDate()
 		binding.recyclerDate.setHasFixedSize(true)
@@ -101,8 +94,8 @@ class MainActivity : AppCompatActivity(), ActivityInterface {
 		binding.recyclerMP.layoutManager = LinearLayoutManager(this)
 		binding.recyclerMP.adapter = RecyclerAdapterMealPlan(binding.recyclerMP)
 		binding.recyclerMP.setHasFixedSize(true)
-		val ithMP = setItemTouchHelper(binding.recyclerMP, mealPlanList.recipe)
-		ithMP.attachToRecyclerView(binding.recyclerMP)
+		val ithMP = setMPTouchHelper(binding.recyclerMP)    // it's called MPTouchHelper because
+		ithMP.attachToRecyclerView(binding.recyclerMP)      // it is specialized for the mealPlanList object
 
 		binding.recyclerRecipes.layoutManager = LinearLayoutManager(this)
 		binding.recyclerRecipes.adapter = RecyclerAdapterRecipes()
@@ -115,9 +108,9 @@ class MainActivity : AppCompatActivity(), ActivityInterface {
 		R.id.action_random -> {
 			for (x in 0 until mealPlanList.recipe.size) {
 				val random = (0 until recipeList.recipe.size).random()
-				mealPlanList.recipe[x] = recipeList.recipe[random].copy()
-				activityBinding.contentMain.recyclerMP.adapter!!.notifyItemRangeChanged(0, DEFAULT_NUM_DAYS)
+				mealPlanList.recipe[x] = recipeList.recipe[random].copyRecipe()
 			}
+			activityBinding.contentMain.recyclerMP.adapter!!.notifyItemRangeChanged(0, DEFAULT_NUM_DAYS)
 			true
 		}
 		else -> {
@@ -140,7 +133,7 @@ class MainActivity : AppCompatActivity(), ActivityInterface {
 	override fun fragmentTransaction(fragment: Fragment, tag: String) {
 		val fragmentManager = supportFragmentManager
 		val transaction = fragmentManager.beginTransaction()
-		transaction.add(R.id.root_layout, fragment, tag)
+		transaction.replace(R.id.root_layout, fragment, tag)
 		transaction.addToBackStack(null)
 		transaction.commit()
 	}
@@ -151,9 +144,19 @@ class MainActivity : AppCompatActivity(), ActivityInterface {
 	override fun updateRecyclerMP() {
 		activityBinding.contentMain.recyclerMP.adapter!!.notifyItemRangeChanged(0, DEFAULT_NUM_DAYS)
 	}
+	override fun saveDefaultPlan() {
+		this.openFileOutput(DEFAULT_PLAN_FILE, Context.MODE_PRIVATE).use {
+			val jsonToFile = Json.encodeToString(mealPlanList)
+			it.write(jsonToFile.toByteArray())
+		}
+	}
+	override fun onDestroy() {
+		saveDefaultPlan()
+		super.onDestroy()
+	}
 }
 private class SetDragListener(val posOfView: Int,
-                              val recyclerView: RecyclerView) : View.OnDragListener
+							  val recyclerView: RecyclerView) : View.OnDragListener
 {
 	override fun onDrag(v: View, event: DragEvent): Boolean {
 		when (event.action) {
@@ -177,28 +180,18 @@ private class SetDragListener(val posOfView: Int,
 				return true
 			}
 			DragEvent.ACTION_DROP -> {
-				// Gets the item containing the dragged data
 				val item: ClipData.Item = event.clipData.getItemAt(0)
 
-				(v as? ImageView)?.clearColorFilter()
-				(v as? TextView)?.setBackgroundColor(Color.TRANSPARENT)
-				println("DRAG DROPPED! Information: ")
-				//	v.invalidate()
-
+			//  (v as? ImageView)?.clearColorFilter()
+			//  (v as? TextView)?.setBackgroundColor(Color.TRANSPARENT)
+			//  v.invalidate()
 				val posOfDragged: Int = item.text.toString().toInt()
-				println(posOfDragged)
-				println(posOfView)
-				mealPlanList.recipe[posOfView] = recipeList.recipe[posOfDragged].copy()
+				mealPlanList.recipe[posOfView] = recipeList.recipe[posOfDragged].copyRecipe()
 				recyclerView.adapter!!.notifyItemChanged(posOfView)
 				return true
 			}
 			DragEvent.ACTION_DRAG_ENDED -> {
-				// Turns off any color tinting
-				(v as? ImageView)?.clearColorFilter()
-				(v as? TextView)?.setBackgroundColor(Color.TRANSPARENT)
-				// Invalidates the view to force a redraw
-				v.invalidate()
-
+				// do nothing
 				return true
 			}
 			else -> {
@@ -208,12 +201,22 @@ private class SetDragListener(val posOfView: Int,
 		}
 	}
 }
-class RecyclerAdapterMealPlan(ra: RecyclerView) :
+class RecyclerAdapterMealPlan(private val recyclerPassed: RecyclerView) :
 		RecyclerView.Adapter<RecyclerAdapterMealPlan.ViewHolder>()
 {
-	private val recyclerAdapter = ra
 	class ViewHolder(v: View) : RecyclerView.ViewHolder(v) {
-		val tvItem: TextView = v.findViewById(R.id.tvItem)
+		private val tvItem: TextView = v.findViewById(R.id.tvItem)
+		fun bind(position: Int, recycler: RecyclerView) {
+			tvItem.tag = position.toString()
+			tvItem.text = mealPlanList.recipe[position].name
+			tvItem.setOnDragListener(SetDragListener(position, recycler))
+			tvItem.setOnClickListener {
+				if(tvItem.text != DEFAULT_EMPTY_RECIPE) {
+					val actInt = tvItem.context as ActivityInterface
+					actInt.fragmentTransaction(ViewMPRecipeFragment(position), "viewMPRecipe")
+				}
+			}
+		}
 	}
 	override fun getItemCount() = mealPlanList.recipe.size
 
@@ -226,9 +229,7 @@ class RecyclerAdapterMealPlan(ra: RecyclerView) :
 		return ViewHolder(inflatedView)
 	}
 	override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-		holder.tvItem.tag = position.toString()
-		holder.tvItem.text = mealPlanList.recipe[position].name
-		holder.tvItem.setOnDragListener(SetDragListener(position, recyclerAdapter))
+		holder.bind(position, recyclerPassed)
 	}
 }
 class RecyclerAdapterRecipes() :
@@ -277,11 +278,15 @@ class RecyclerAdapterDate() :
 		return ViewHolder(inflatedView)
 	}
 	override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-		holder.tvItem.text = mealPlanList.getDayByPosition(position)
+		val gc = GregorianCalendar()
+		gc.timeInMillis =  mealPlanList.startDate
+		gc.add(Calendar.DATE, position)
+		val df: DateFormat = SimpleDateFormat("MM/dd E")
+		holder.tvItem.text = df.format(gc.time)
 	}
 }
-fun setItemTouchHelper(recycler: RecyclerView, mutableList: MutableList<RecipeX>): ItemTouchHelper {
-		val itemTouchCallback = object : ItemTouchHelper.Callback() {
+fun setMPTouchHelper(recycler: RecyclerView): ItemTouchHelper {
+	val itemTouchCallback = object : ItemTouchHelper.Callback() {
 		override fun isLongPressDragEnabled() = true
 		override fun isItemViewSwipeEnabled() = true
 		override fun getMovementFlags(
@@ -298,19 +303,30 @@ fun setItemTouchHelper(recycler: RecyclerView, mutableList: MutableList<RecipeX>
 		): Boolean {
 			if (source.itemViewType != target.itemViewType)
 				return false
-			Collections.swap(mutableList, source.adapterPosition, target.adapterPosition)
-			recycler.adapter!!.notifyItemMoved(source.adapterPosition, target.adapterPosition)
+			val sourcePos = source.adapterPosition
+			val targetPos = target.adapterPosition
+			val saveSource = mealPlanList.recipe[sourcePos].copyRecipe()
+			mealPlanList.recipe[sourcePos] = mealPlanList.recipe[targetPos].copyRecipe()
+			mealPlanList.recipe[targetPos] = saveSource
+
+			recyclerView.adapter!!.notifyItemMoved(sourcePos, targetPos)
+			if (sourcePos < targetPos)
+				recyclerView.adapter!!.notifyItemRangeChanged(sourcePos, recyclerView.adapter!!.itemCount - sourcePos)
+			else
+				recyclerView.adapter!!.notifyItemRangeChanged(targetPos, recyclerView.adapter!!.itemCount - targetPos)
+
 			return true
 		}
 		override fun onSwiped(viewHolder: RecyclerView.ViewHolder, swipeDir: Int) {
-			mutableList.elementAt(viewHolder.adapterPosition).name = "                              "
-			mutableList.elementAt(viewHolder.adapterPosition).ingredients = " "
-			recycler.adapter!!.notifyItemChanged(viewHolder.adapterPosition)
+			val pos = viewHolder.adapterPosition
+			mealPlanList.recipe[pos].name = DEFAULT_EMPTY_RECIPE
+			mealPlanList.recipe[pos].ingredients = "  "
+
+			recycler.adapter!!.notifyItemChanged(pos)
 		}
 	}
-
 	return ItemTouchHelper(itemTouchCallback)
 }
 
 // TODO: Set up a settings file
-// TODO: Fix recipe view
+// TODO: Try to set up where a drop event triggers a DataSetChange or ItemRangeChange

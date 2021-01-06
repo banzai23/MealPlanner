@@ -1,12 +1,11 @@
 
 package com.example.mealplanner
 
+import android.app.Activity
 import android.content.Context
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
-import android.widget.Button
+import android.view.inputmethod.InputMethodManager
 import androidx.fragment.app.Fragment
 import com.example.mealplanner.databinding.FragmentEditRecipesBinding
 import kotlinx.serialization.encodeToString
@@ -23,6 +22,7 @@ class EditRecipeFragment(position: Int): Fragment(R.layout.fragment_edit_recipes
 		binding.tvRecipe.text = recipeList.recipe[pos].name
 
 		binding.btnCancel.setOnClickListener {
+			hideKeyboard()
 			requireActivity().supportFragmentManager.popBackStack()
 		}
 		binding.btnSave.setOnClickListener {
@@ -31,12 +31,17 @@ class EditRecipeFragment(position: Int): Fragment(R.layout.fragment_edit_recipes
 				val jsonToFile = Json.encodeToString(recipeList)
 				it.write(jsonToFile.toByteArray())
 			}
+			hideKeyboard()
 			requireActivity().supportFragmentManager.popBackStack()
 		}
 	}
 	override fun onDestroyView() {
 		super.onDestroyView()
 		_binding = null
+	}
+	private fun hideKeyboard() {
+		val imm: InputMethodManager = requireContext().getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+		imm.hideSoftInputFromWindow(requireView().windowToken, 0)
 	}
 }
 /*

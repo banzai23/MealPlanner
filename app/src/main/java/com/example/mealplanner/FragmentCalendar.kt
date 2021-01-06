@@ -39,9 +39,13 @@ class CalendarFragment : Fragment(R.layout.fragment_calendar) {
 				it.write(jsonToFile.toByteArray())
 			}
 			// done saving, now load
-			val selectedDate = binding.calendarView.date
-			gc.timeInMillis = selectedDate
-			filename = gc.get(Calendar.WEEK_OF_YEAR).toString()
+			gc.timeInMillis = binding.calendarView.date
+			// roll back to Sunday
+			while (gc.get(Calendar.DAY_OF_WEEK) != 1)
+				gc.roll(GregorianCalendar.DATE, false)
+			//
+			val selectedDateToSunday = gc.timeInMillis
+			filename = gc.get(Calendar.WEEK_OF_YEAR).toString() // setting filename to week# of year
 			val inputStream: InputStream
 			try {
 					inputStream = requireContext().openFileInput(filename)
@@ -49,12 +53,12 @@ class CalendarFragment : Fragment(R.layout.fragment_calendar) {
 					mealPlanList = Json.decodeFromString(inputString)
 				} catch (e: FileNotFoundException) {
 					for (x in 0 until mealPlanList.recipe.size) {
-						mealPlanList.recipe[x].name = "                               "
-						mealPlanList.recipe[x].ingredients = " "
+						mealPlanList.recipe[x].name = DEFAULT_EMPTY_RECIPE
+						mealPlanList.recipe[x].ingredients = "  "
 					}
 				}
 			// done loading, now update recyclers
-			updateAct.updateRecyclerDate(selectedDate)
+			updateAct.updateRecyclerDate(selectedDateToSunday)
 			updateAct.updateRecyclerMP()
 			requireActivity().supportFragmentManager.popBackStack()
 		}
