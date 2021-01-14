@@ -2,63 +2,78 @@
 	"recipe": [
 	{
 		"name": "Peanut Butter Jelly",
-		"ingredients": "1 peanut\n2 jelly"
+		"ingredients": "1 peanut\n2 jelly",
+		"cat": 2
 	},
 	{
 		"name": "Chicken and Rice",
-		"ingredients": "1 chicken\n2 rice"
+		"ingredients": "1 chicken\n2 rice",
+		"cat": 4
 	},
 	{
 		"name": "Chicken and Mashed Potatoes",
-		"ingredients": "1 chicken\n2 potatoes"
+		"ingredients": "1 chicken\n2 potatoes",
+		"cat": 4
 	},
 	{
 		"name": "Quinoa Salad",
-		"ingredients": "quinoa salad duh"
+		"ingredients": "quinoa salad duh",
+		"cat": 6
 	},
 	{
 		"name": "Tacos",
-		"ingredients": "1 taco\n2 beef"
+		"ingredients": "1 taco\n2 beef",
+	  	"cat": 6
 	},
 	{
 		"name": "Baked Potatoes",
-		"ingredients": "Potatoes"
+		"ingredients": "Potatoes",
+	  	"cat": 4
 	},
 	{
 		"name": "Hamburgers",
-		"ingredients": "Beef N Cheese"
+		"ingredients": "Beef N Cheese",
+	  	"cat": 4
 	},
 	{
 		"name": "Hot Dogs",
-		"ingredients": "Hot Dogs"
+		"ingredients": "Hot Dogs",
+	  	"cat": 6
 	},
 	{
-		"name": "Breakfast for Dinner",
-		"ingredients": "Eggs and Sausage"
+		"name": "Breakfast",
+		"ingredients": "Eggs and Sausage",
+	  	"cat": 1
 	},
 	{
 		"name": "Taco Soup",
-		"ingredients": "1 can Kidney beans\n1 can Black beans"
+		"ingredients": "1 can Kcatney beans\n1 can Black beans",
+	  	"cat": 6
 	},
 	{
 		"name": "Caesar Salad",
-		"ingredients": "Romaine and Caesar dressing"
+		"ingredients": "Romaine and Caesar dressing",
+	  	"cat": 6
 	},
 	{
 		"name": "Steak and Potatoes",
-		"ingredients": "1 steak\n2 potatoes"
+		"ingredients": "1 steak\n2 potatoes",
+	  	"cat": 4
 	},
 	{
 		"name": "Soup, Salad, and Breadsticks",
-		"ingredients": "SSB"
+		"ingredients": "SSB",
+	  	"cat": 6
 	},
 	{
 		"name": "Bacon, Lettuce, Tomato",
-		"ingredients": "Bacon, Lettuce, Tomatoes"
+		"ingredients": "Bacon, Lettuce, Tomatoes",
+	  	"cat": 2
 	},
 	{
 		"name": "Cilantro Kale Advocado",
-		"ingredients": "Cilantro\nKale\nAvocado"
+		"ingredients": "Cilantro\nKale\nAvocado",
+	  	"cat": 6
 	}
 	]
 }

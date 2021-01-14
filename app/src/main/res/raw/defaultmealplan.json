@@ -1,33 +1,89 @@
 {
-	"recipe": [
+  "recipe": [
 	{
-		"name": "Peanut Butter Jelly",
-		"ingredients": "1 peanut\n2 jelly"
+	  "name": "Breakfast",
+	  "ingredients": "Eggs and Sausage"
 	},
 	{
-		"name": "Chicken and Rice",
-		"ingredients": "1 chicken\n2 rice"
+	  "name": "Breakfast",
+	  "ingredients": "Eggs and Sausage"
 	},
 	{
-		"name": "Chicken and Mashed Potatoes",
-		"ingredients": "1 chicken\n2 potatoes"
+	  "name": "Breakfast",
+	  "ingredients": "Eggs and Sausage"
 	},
 	{
-		"name": "Quinoa Salad",
-		"ingredients": "quinoa salad duh"
+	  "name": "Breakfast",
+	  "ingredients": "Eggs and Sausage"
 	},
 	{
-		"name": "Tacos",
-		"ingredients": "1 taco\n2 beef"
+	  "name": "Breakfast",
+	  "ingredients": "Eggs and Sausage"
 	},
 	{
-		"name": "Baked Potatoes",
-		"ingredients": "Potatoes"
+	  "name": "Breakfast",
+	  "ingredients": "Eggs and Sausage"
 	},
 	{
-		"name": "Hamburgers",
-		"ingredients": "Beef N Cheese"
+	  "name": "Breakfast",
+	  "ingredients": "Eggs and Sausage"
+	},
+	{
+	  "name": "Peanut Butter Jelly",
+	  "ingredients": "1 peanut\n2 jelly"
+	},
+	{
+	  "name": "Chicken and Rice",
+	  "ingredients": "1 chicken\n2 rice"
+	},
+	{
+	  "name": "Chicken and Mashed Potatoes",
+	  "ingredients": "1 chicken\n2 potatoes"
+	},
+	{
+	  "name": "Quinoa Salad",
+	  "ingredients": "quinoa salad duh"
+	},
+	{
+	  "name": "Tacos",
+	  "ingredients": "1 taco\n2 beef"
+	},
+	{
+	  "name": "Baked Potatoes",
+	  "ingredients": "Potatoes"
+	},
+	{
+	  "name": "Hamburgers",
+	  "ingredients": "Beef N Cheese"
+	},
+	{
+	  "name": "Peanut Butter Jelly",
+	  "ingredients": "1 peanut\n2 jelly"
+	},
+	{
+	  "name": "Chicken and Rice",
+	  "ingredients": "1 chicken\n2 rice"
+	},
+	{
+	  "name": "Chicken and Mashed Potatoes",
+	  "ingredients": "1 chicken\n2 potatoes"
+	},
+	{
+	  "name": "Quinoa Salad",
+	  "ingredients": "quinoa salad duh"
+	},
+	{
+	  "name": "Tacos",
+	  "ingredients": "1 taco\n2 beef"
+	},
+	{
+	  "name": "Baked Potatoes",
+	  "ingredients": "Potatoes"
+	},
+	{
+	  "name": "Hamburgers",
+	  "ingredients": "Beef N Cheese"
 	}
-	],
-	"startDate": 1609787401000
+  ],
+  "startDate": 1609787401000
 }

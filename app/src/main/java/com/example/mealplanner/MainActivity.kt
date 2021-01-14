@@ -3,6 +3,7 @@ package com.example.mealplanner
 import android.content.ClipData
 import android.content.ClipDescription
 import android.content.Context
+import android.graphics.Typeface
 import android.os.Bundle
 import android.view.*
 import android.widget.TextView
@@ -12,35 +13,44 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mealplanner.databinding.ActivityMainBinding
+import com.google.android.material.tabs.TabLayout
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import java.io.FileNotFoundException
 import java.io.InputStream
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.*
 
-const val DEFAULT_NUM_DAYS = 7
+const val DEFAULT_NUM_DAYS = 7    // A week is the default view for the planner
 const val DEFAULT_RECIPE_FILE = "savedRecipes.json"
 const val DEFAULT_PLAN_FILE = "defaultPlan.json"
 const val DEFAULT_EMPTY_RECIPE = "                               "
+const val BREAKFAST_CAT = 1
+const val LUNCH_CAT = 2
+const val DINNER_CAT = 4
 
 lateinit var mealPlanList: MealPlan
-lateinit var recipeList: Recipe
+lateinit var masterRecipeList: Recipe   // for storing every recipe
+lateinit var recipeList: Recipe         // for RecyclerAdapter
+var mealPlanOffset = 0
 var assetsLoaded: Boolean = false
 
 @Serializable
 data class Recipe(var recipe: MutableList<RecipeX>)
 @Serializable
-data class MealPlan(var recipe: MutableList<RecipeX>, var startDate: Long)
+data class RecipeX(var name: String = "", var ingredients: String = "", var cat: Int)
 @Serializable
-data class RecipeX(var name: String = "", var ingredients: String = "")
+data class MealPlan(var recipe: MutableList<MealPlanX>, var startDate: Long)
+@Serializable
+data class MealPlanX(var name: String = "", var ingredients: String = "")
+
 
 interface ActivityInterface {
 	fun updateRecyclerDate(date: Long)
 	fun updateRecyclerMP()
+	fun updateRecyclerRecipes()
 	fun fragmentTransaction(fragment: Fragment, tag: String)
 	fun saveDefaultPlan()
 }
@@ -57,21 +67,24 @@ class MainActivity : AppCompatActivity(), ActivityInterface {
 		// load asset
 		if (!assetsLoaded) {
 			var inputStream: InputStream =
-			try {
-				this.openFileInput(DEFAULT_RECIPE_FILE)
-			} catch (e: FileNotFoundException) {
+		//	try {
+		//		this.openFileInput(DEFAULT_RECIPE_FILE)
+		//	} catch (e: FileNotFoundException) {
 				this.resources.openRawResource(R.raw.savedrecipes)
-			}
+		//	}
 			var inputString = inputStream.bufferedReader().use { it.readText() }
-			recipeList = Json.decodeFromString(inputString)
-			recipeList.recipe.sortBy { it.toString() }
+			masterRecipeList = Json.decodeFromString(inputString)
+			masterRecipeList.recipe.sortBy { it.toString() }
+
+			recipeList = Recipe(mutableListOf())
+			updateRecipeList(mealPlanOffset)
 
 			inputStream =
-			try {
-				this.openFileInput(DEFAULT_PLAN_FILE)
-			} catch (e: FileNotFoundException) {
+		//	try {
+		//		this.openFileInput(DEFAULT_PLAN_FILE)
+	//		} catch (e: FileNotFoundException) {
 				this.resources.openRawResource(R.raw.defaultmealplan)
-			}
+	//		}
 			inputString = inputStream.bufferedReader().use { it.readText() }
 			mealPlanList = Json.decodeFromString(inputString)
 
@@ -93,8 +106,9 @@ class MainActivity : AppCompatActivity(), ActivityInterface {
 		// set up RecyclerMP
 		val mpClickListener = object : RecyclerClickListener {
 			override fun onClick(view: View, position: Int) {
-				if(mealPlanList.recipe[position].name != DEFAULT_EMPTY_RECIPE) {
-					fragmentTransaction(ViewMPRecipeFragment(position), "viewMPRecipe")
+				val pos = position+mealPlanOffset
+				if(mealPlanList.recipe[pos].name != DEFAULT_EMPTY_RECIPE) {
+					fragmentTransaction(ViewMPRecipeFragment(pos), "viewMPRecipe")
 				}
 			}
 		}
@@ -102,7 +116,7 @@ class MainActivity : AppCompatActivity(), ActivityInterface {
 		binding.recyclerMP.adapter = RecyclerAdapterMealPlan(mpClickListener, binding.recyclerMP)
 		binding.recyclerMP.setHasFixedSize(true)
 		val ithMP = setMPTouchHelper(binding.recyclerMP)    // it's called MPTouchHelper because
-		ithMP.attachToRecyclerView(binding.recyclerMP)      // it is specialized for the mealPlanList object
+		ithMP.attachToRecyclerView(binding.recyclerMP)      // it's specialized for the mealPlanList object
 		// set up RecyclerRecipes
 		val recClickListener = object : RecyclerClickListener {
 			override fun onClick(view: View, position: Int) {
@@ -118,6 +132,21 @@ class MainActivity : AppCompatActivity(), ActivityInterface {
 		}
 		binding.recyclerRecipes.layoutManager = LinearLayoutManager(this)
 		binding.recyclerRecipes.adapter = RecyclerAdapterRecipes(recClickListener, recLongClickListener)
+
+		activityBinding.tabLayout.addOnTabSelectedListener( object : TabLayout.OnTabSelectedListener {
+			override fun onTabSelected(tab: TabLayout.Tab?) {
+				mealPlanOffset = tab!!.position * 7
+				updateRecipeList(mealPlanOffset)
+				binding.recyclerMP.adapter!!.notifyDataSetChanged()
+				binding.recyclerRecipes.adapter!!.notifyDataSetChanged()
+			}
+			override fun onTabReselected(tab: TabLayout.Tab?) {
+				println("Tab reselected!")
+			}
+			override fun onTabUnselected(tab: TabLayout.Tab?) {
+				println("Tab unselected!")
+			}
+		})
 	}
 	override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
 		R.id.action_new -> {
@@ -125,9 +154,10 @@ class MainActivity : AppCompatActivity(), ActivityInterface {
 			true
 		}
 		R.id.action_random -> {
-			for (x in 0 until mealPlanList.recipe.size) {
+			for (x in mealPlanOffset until mealPlanOffset+7) {
 				val random = (0 until recipeList.recipe.size).random()
-				mealPlanList.recipe[x] = recipeList.recipe[random].copy()
+				mealPlanList.recipe[x].name = recipeList.recipe[random].name
+				mealPlanList.recipe[x].ingredients = recipeList.recipe[random].ingredients
 			}
 			activityBinding.contentMain.recyclerMP.adapter!!.notifyItemRangeChanged(0, DEFAULT_NUM_DAYS)
 			true
@@ -167,6 +197,9 @@ class MainActivity : AppCompatActivity(), ActivityInterface {
 	override fun updateRecyclerMP() {
 		activityBinding.contentMain.recyclerMP.adapter!!.notifyItemRangeChanged(0, DEFAULT_NUM_DAYS)
 	}
+	override fun updateRecyclerRecipes() {
+		activityBinding.contentMain.recyclerRecipes.adapter!!.notifyDataSetChanged()
+	}
 	override fun saveDefaultPlan() {
 		this.openFileOutput(DEFAULT_PLAN_FILE, Context.MODE_PRIVATE).use {
 			val jsonToFile = Json.encodeToString(mealPlanList)
@@ -176,6 +209,32 @@ class MainActivity : AppCompatActivity(), ActivityInterface {
 	override fun onDestroy() {
 		saveDefaultPlan()
 		super.onDestroy()
+	}
+	private fun updateRecipeList(offset: Int) {
+		recipeList.recipe.clear()
+		when (offset) {
+			0 -> {
+				for (x in 0 until masterRecipeList.recipe.size) {
+					val cat = masterRecipeList.recipe[x].cat
+					if (cat == 1 || cat == 3 || cat == 5 || cat == 7) {
+						recipeList.recipe.add(masterRecipeList.recipe[x])
+					}
+				}
+			}
+			7 -> {
+				for (x in 0 until masterRecipeList.recipe.size) {
+					val cat = masterRecipeList.recipe[x].cat
+					if (cat == 2 || cat == 3 || cat == 6 || cat == 7) {
+						recipeList.recipe.add(masterRecipeList.recipe[x])
+					}
+				}
+			}
+			14 -> {
+				for (x in 0 until masterRecipeList.recipe.size) {
+					recipeList.recipe.add(masterRecipeList.recipe[x])
+				}
+			}
+		}
 	}
 }
 class RecyclerAdapterRecipes(rvClickListener: RecyclerClickListener,
@@ -212,7 +271,7 @@ class RecyclerAdapterRecipes(rvClickListener: RecyclerClickListener,
 		})
 	}
 }
-class RecyclerAdapterMealPlan(rvClickListener: RecyclerClickListener, val recycler: RecyclerView) :
+class RecyclerAdapterMealPlan(rvClickListener: RecyclerClickListener, private val recycler: RecyclerView) :
 		RecyclerView.Adapter<RecyclerAdapterMealPlan.ViewHolder>()
 {
 	val clickListener = rvClickListener
@@ -224,7 +283,7 @@ class RecyclerAdapterMealPlan(rvClickListener: RecyclerClickListener, val recycl
 			tvItem.text = mealPlanList.recipe[position].name
 		}
 	}
-	override fun getItemCount() = mealPlanList.recipe.size
+	override fun getItemCount() = DEFAULT_NUM_DAYS
 
 	override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
 		val inflatedView = LayoutInflater.from(parent.context).inflate(
@@ -235,7 +294,7 @@ class RecyclerAdapterMealPlan(rvClickListener: RecyclerClickListener, val recycl
 		return ViewHolder(inflatedView)
 	}
 	override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-		holder.bind(position)
+		holder.bind(position+mealPlanOffset)
 		holder.itemView.setOnClickListener(object : View.OnClickListener {
 			override fun onClick(view: View) {
 				clickListener.onClick(view, holder.adapterPosition)
@@ -262,8 +321,14 @@ class RecyclerAdapterDate() :
 	}
 	override fun onBindViewHolder(holder: ViewHolder, position: Int) {
 		val gc = GregorianCalendar()
+		val today = gc.get(Calendar.DATE)
 		gc.timeInMillis =  mealPlanList.startDate
 		gc.add(Calendar.DATE, position)
+
+		if (gc.get(Calendar.DATE) == today) {
+			holder.tvItem.typeface = Typeface.DEFAULT_BOLD
+		}
+
 		val df: DateFormat = SimpleDateFormat("MM/dd E")
 		holder.tvItem.text = df.format(gc.time)
 	}
@@ -286,22 +351,22 @@ fun setMPTouchHelper(recycler: RecyclerView): ItemTouchHelper {
 		): Boolean {
 			if (source.itemViewType != target.itemViewType)
 				return false
-			val sourcePos = source.adapterPosition
-			val targetPos = target.adapterPosition
+			val sourcePos = source.adapterPosition+mealPlanOffset
+			val targetPos = target.adapterPosition+mealPlanOffset
 			val saveSource = mealPlanList.recipe[sourcePos].copy()
 			mealPlanList.recipe[sourcePos] = mealPlanList.recipe[targetPos].copy()
 			mealPlanList.recipe[targetPos] = saveSource
 
-			recyclerView.adapter!!.notifyItemMoved(sourcePos, targetPos)
+			recyclerView.adapter!!.notifyItemMoved(source.adapterPosition, target.adapterPosition)
 
 			return true
 		}
 		override fun onSwiped(viewHolder: RecyclerView.ViewHolder, swipeDir: Int) {
-			val pos = viewHolder.adapterPosition
+			val pos = viewHolder.adapterPosition+mealPlanOffset
 			mealPlanList.recipe[pos].name = DEFAULT_EMPTY_RECIPE
 			mealPlanList.recipe[pos].ingredients = "  "
 
-			recycler.adapter!!.notifyItemChanged(pos)
+			recycler.adapter!!.notifyItemChanged(viewHolder.adapterPosition)
 		}
 	}
 	return ItemTouchHelper(itemTouchCallback)
@@ -336,7 +401,9 @@ private class SetDragListener(val posOfView: Int, val recycler: RecyclerView) : 
 				//  (v as? TextView)?.setBackgroundColor(Color.TRANSPARENT)
 				//  v.invalidate()
 				val posOfDragged: Int = item.text.toString().toInt()
-				mealPlanList.recipe[posOfView] = recipeList.recipe[posOfDragged].copy()
+				val pos = posOfView+mealPlanOffset
+				mealPlanList.recipe[pos].name = recipeList.recipe[posOfDragged].name
+				mealPlanList.recipe[pos].ingredients = recipeList.recipe[posOfDragged].ingredients
 				recycler.adapter!!.notifyItemChanged(posOfView)
 				return true
 			}
@@ -351,4 +418,5 @@ private class SetDragListener(val posOfView: Int, val recycler: RecyclerView) : 
 		}
 	}
 }
-// TODO: Set up a settings file
+// TODO: Need to add an AddRecipeFragment for adding recipes easier
+// TODO: Upload recipe from a website -- website parser or Copy/paste parser

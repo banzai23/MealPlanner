@@ -27,4 +27,22 @@
             android:id="@+id/action_calendarFragment_to_mainActivity"
             app:destination="@id/mainActivity" />
     </fragment>
+    <fragment
+        android:id="@+id/viewMPRecipeFragment"
+        android:name="com.example.mealplanner.ViewMPRecipeFragment"
+        android:label="fragment_blank_view"
+        tools:layout="@layout/fragment_blank_view" >
+        <action
+            android:id="@+id/action_viewMPRecipeFragment_to_mainActivity"
+            app:destination="@id/mainActivity" />
+    </fragment>
+    <fragment
+        android:id="@+id/shoppingListFragment"
+        android:name="com.example.mealplanner.ShoppingListFragment"
+        android:label="fragment_shopping_list"
+        tools:layout="@layout/fragment_shopping_list" >
+        <action
+            android:id="@+id/action_shoppingListFragment_to_mainActivity"
+            app:destination="@id/mainActivity" />
+    </fragment>
 </navigation>

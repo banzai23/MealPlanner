@@ -21,12 +21,12 @@ class ShoppingListFragment : Fragment(R.layout.fragment_shopping_list) {
 
 		binding.tvTitle.text = "Shopping List"
 
-		val allIngredients: MutableList<String> = mutableListOf()
-		for (x in 0 until DEFAULT_NUM_DAYS) {
+		val getAll: MutableList<String> = mutableListOf()
+		for (x in 0 until mealPlanList.recipe.size) {
 			val split = mealPlanList.recipe[x].ingredients.trim().split("\n")
-			allIngredients.addAll(split)
+			getAll.addAll(split)
 		}
-
+		val allIngredients = getAll.toSet().toMutableList()
 		binding.recyclerShoppingList.layoutManager = LinearLayoutManager(requireContext())
 		binding.recyclerShoppingList.adapter = RecyclerAdapterShoppingList(allIngredients)
 		val setTouch = setSLTouchHelper(allIngredients, binding.recyclerShoppingList)

@@ -9,7 +9,7 @@
     android:background="@drawable/border_plans"
     android:orientation="vertical"
     android:padding="10dp"
-    tools:context=".NewPlanFragment">
+    tools:context=".CalendarFragment">
 
     <CalendarView
         android:id="@+id/calendarView"
@@ -26,7 +26,8 @@
         android:layout_height="wrap_content"
         android:text="@string/str_select"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="@+id/calendarView" />
+        app:layout_constraintEnd_toEndOf="@+id/calendarView"
+        android:layout_marginEnd="10dp"/>
 
     <Button
         android:id="@+id/btn_CancelCal"
@@ -35,6 +36,7 @@
         android:layout_height="wrap_content"
         android:text="@string/str_cancel"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/calendarView" />
+        app:layout_constraintStart_toStartOf="@+id/calendarView"
+        android:layout_marginStart="10dp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
