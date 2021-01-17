@@ -9,7 +9,6 @@
     android:background="@color/white"
     tools:context=".ShoppingListFragment">
 
-
     <TextView
         android:id="@+id/hideActivityInput"
         android:layout_width="match_parent"
@@ -30,13 +29,13 @@
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerShoppingList"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:background="@drawable/border_recipes"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
         android:overScrollMode="never"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tv_title" />
+        app:layout_constraintTop_toBottomOf="@id/tv_title"
+        app:layout_constraintBottom_toTopOf="@id/btn_Back"/>
 
     <Button
         android:id="@+id/btn_Back"

@@ -3,6 +3,7 @@ package com.example.mealplanner
 import android.content.ClipData
 import android.content.ClipDescription
 import android.content.Context
+import android.content.Intent
 import android.graphics.Typeface
 import android.os.Bundle
 import android.view.*
@@ -26,12 +27,13 @@ import java.util.*
 const val DEFAULT_NUM_DAYS = 7    // A week is the default view for the planner
 const val DEFAULT_RECIPE_FILE = "savedRecipes.json"
 const val DEFAULT_PLAN_FILE = "defaultPlan.json"
+const val DEFAULT_SHOPPING_LIST_FILE = "shoppingList.txt"
 const val DEFAULT_EMPTY_RECIPE = "                               "
 const val BREAKFAST_CAT = 1
 const val LUNCH_CAT = 2
 const val DINNER_CAT = 4
 
-lateinit var mealPlanList: MealPlan
+lateinit var mealPlanList: MealPlan     // for RecyclerMealPlan
 lateinit var masterRecipeList: Recipe   // for storing every recipe
 lateinit var recipeList: Recipe         // for RecyclerAdapter
 var mealPlanOffset = 0
@@ -120,7 +122,7 @@ class MainActivity : AppCompatActivity(), ActivityInterface {
 		// set up RecyclerRecipes
 		val recClickListener = object : RecyclerClickListener {
 			override fun onClick(view: View, position: Int) {
-				fragmentTransaction(EditRecipeFragment(position), "savedRecipes")
+				fragmentTransaction(EditRecipeFragment(position, false), "savedRecipes")
 			}
 		}
 		val recLongClickListener = object : RecyclerLongClickListener {
@@ -154,16 +156,16 @@ class MainActivity : AppCompatActivity(), ActivityInterface {
 			true
 		}
 		R.id.action_random -> {
-			for (x in mealPlanOffset until mealPlanOffset+7) {
-				val random = (0 until recipeList.recipe.size).random()
-				mealPlanList.recipe[x].name = recipeList.recipe[random].name
-				mealPlanList.recipe[x].ingredients = recipeList.recipe[random].ingredients
-			}
-			activityBinding.contentMain.recyclerMP.adapter!!.notifyItemRangeChanged(0, DEFAULT_NUM_DAYS)
+			updateRecipeListRandom(mealPlanOffset)
 			true
 		}
 		R.id.action_list -> {
 			fragmentTransaction(ShoppingListFragment(), "shoppingList")
+			true
+		}
+		R.id.action_recipe_manager -> {
+			val intent = Intent(this, RecipeManagerActivity::class.java)
+			startActivity(intent)
 			true
 		}
 		else -> {
@@ -186,8 +188,14 @@ class MainActivity : AppCompatActivity(), ActivityInterface {
 	override fun fragmentTransaction(fragment: Fragment, tag: String) {
 		val fragmentManager = supportFragmentManager
 		val transaction = fragmentManager.beginTransaction()
-		transaction.replace(R.id.root_layout, fragment, tag)
-		transaction.addToBackStack(null)
+		val findFrag = fragmentManager.findFragmentByTag(tag)
+		fragmentManager.executePendingTransactions()
+		if (findFrag != null)
+			transaction.replace(R.id.root_layout, findFrag, tag)
+		else {
+			transaction.add(R.id.root_layout, fragment, tag)
+			transaction.addToBackStack(null)
+		}
 		transaction.commit()
 	}
 	override fun updateRecyclerDate(date: Long) {
@@ -206,17 +214,16 @@ class MainActivity : AppCompatActivity(), ActivityInterface {
 			it.write(jsonToFile.toByteArray())
 		}
 	}
-	override fun onDestroy() {
-		saveDefaultPlan()
-		super.onDestroy()
-	}
 	private fun updateRecipeList(offset: Int) {
 		recipeList.recipe.clear()
 		when (offset) {
 			0 -> {
 				for (x in 0 until masterRecipeList.recipe.size) {
 					val cat = masterRecipeList.recipe[x].cat
-					if (cat == 1 || cat == 3 || cat == 5 || cat == 7) {
+					if (cat == BREAKFAST_CAT ||
+							cat == BREAKFAST_CAT+LUNCH_CAT ||
+							cat == BREAKFAST_CAT+DINNER_CAT ||
+							cat == BREAKFAST_CAT+LUNCH_CAT+DINNER_CAT) {
 						recipeList.recipe.add(masterRecipeList.recipe[x])
 					}
 				}
@@ -224,7 +231,10 @@ class MainActivity : AppCompatActivity(), ActivityInterface {
 			7 -> {
 				for (x in 0 until masterRecipeList.recipe.size) {
 					val cat = masterRecipeList.recipe[x].cat
-					if (cat == 2 || cat == 3 || cat == 6 || cat == 7) {
+					if (cat == LUNCH_CAT ||
+							cat == BREAKFAST_CAT+LUNCH_CAT ||
+							cat == LUNCH_CAT+DINNER_CAT ||
+							cat == LUNCH_CAT+BREAKFAST_CAT+DINNER_CAT) {
 						recipeList.recipe.add(masterRecipeList.recipe[x])
 					}
 				}
@@ -235,6 +245,37 @@ class MainActivity : AppCompatActivity(), ActivityInterface {
 				}
 			}
 		}
+	}
+	private fun updateRecipeListRandom(offset: Int) {
+		if (offset != 14) {
+			for (x in offset until offset + 7) {
+				val random = (0 until recipeList.recipe.size).random()
+				mealPlanList.recipe[x].name = recipeList.recipe[random].name
+				mealPlanList.recipe[x].ingredients = recipeList.recipe[random].ingredients
+			}
+		}
+		else
+		{
+			for (x in offset until offset+7) {
+				var random = (0 until recipeList.recipe.size).random()
+				var cat = recipeList.recipe[random].cat
+				while (cat != DINNER_CAT &&
+						cat != DINNER_CAT + BREAKFAST_CAT &&
+						cat != DINNER_CAT + LUNCH_CAT &&
+						cat != DINNER_CAT + BREAKFAST_CAT + LUNCH_CAT) {
+					random = (0 until recipeList.recipe.size).random()
+					cat = recipeList.recipe[random].cat
+				}
+				mealPlanList.recipe[x].name = recipeList.recipe[random].name
+				mealPlanList.recipe[x].ingredients = recipeList.recipe[random].ingredients
+			}
+			activityBinding.contentMain.recyclerMP.adapter!!.notifyItemRangeChanged(0, DEFAULT_NUM_DAYS)
+		}
+		activityBinding.contentMain.recyclerMP.adapter!!.notifyItemRangeChanged(0, DEFAULT_NUM_DAYS)
+	}
+	override fun onDestroy() {
+		saveDefaultPlan()
+		super.onDestroy()
 	}
 }
 class RecyclerAdapterRecipes(rvClickListener: RecyclerClickListener,
@@ -418,5 +459,11 @@ private class SetDragListener(val posOfView: Int, val recycler: RecyclerView) : 
 		}
 	}
 }
-// TODO: Need to add an AddRecipeFragment for adding recipes easier
+
+// TODO: Separate 'meals' and 'sides' in recipes, maybe add another object?
+// TODO: Add radio button when editing recipes, <*> Meal < > Side
+// TODO: When clicking or something, or maybe a new context menu, add sides to meals
 // TODO: Upload recipe from a website -- website parser or Copy/paste parser
+// TODO: In object 'recipe' add instructions below, and quantity next to the ingredients.
+// TODO: In object 'recipe' add Header option, with cooktime and preptime if they are available
+// TODO: Save shopping list, only 1 no duplicates. shoppingList

@@ -9,6 +9,15 @@
     android:orientation="vertical"
     tools:context=".MainActivity">
 
+    <TextView
+        android:id="@+id/recipeTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/str_recipe_title"
+        android:textStyle="italic"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/recyclerDate" />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerDate"
         android:layout_width="100dp"
@@ -35,6 +44,8 @@
         android:scrollbars="vertical"
         android:layout_marginStart="100dp"
         app:layout_constraintTop_toBottomOf="@id/recyclerMP"
-        app:layout_constraintBottom_toBottomOf="parent" />
+        app:layout_constraintBottom_toBottomOf="parent" >
+
+    </androidx.recyclerview.widget.RecyclerView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

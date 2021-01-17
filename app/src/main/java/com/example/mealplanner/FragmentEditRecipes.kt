@@ -1,4 +1,3 @@
-
 package com.example.mealplanner
 
 import android.app.Activity
@@ -11,37 +10,105 @@ import com.example.mealplanner.databinding.FragmentEditRecipesBinding
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
-class EditRecipeFragment(position: Int): Fragment(R.layout.fragment_edit_recipes) {
+class EditRecipeFragment(position: Int, editMaster: Boolean): Fragment(R.layout.fragment_edit_recipes) {
 	private var _binding: FragmentEditRecipesBinding? = null
 	private val pos = position  // this allows access to position in the following functions
+	private val master = editMaster
 	override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 		super.onViewCreated(view, savedInstanceState)
 		val binding = FragmentEditRecipesBinding.bind(view)
+		var cat: Int
 		_binding = binding
-		binding.etRecipe.setText(recipeList.recipe[pos].ingredients)
-		binding.tvRecipe.text = recipeList.recipe[pos].name
-
+		if (master) {
+			binding.etRecipe.setText(masterRecipeList.recipe[pos].ingredients)
+			binding.tvRecipe.text = masterRecipeList.recipe[pos].name
+			cat = masterRecipeList.recipe[pos].cat
+		}
+		else {
+			binding.etRecipe.setText(recipeList.recipe[pos].ingredients)
+			binding.tvRecipe.text = recipeList.recipe[pos].name
+			cat = recipeList.recipe[pos].cat
+		}
+		// START Checkbox check for checks
+		if (cat == 1)
+			binding.cb1.isChecked = true
+		if (cat == 2)
+			binding.cb2.isChecked = true
+		if (cat == 3) {
+			binding.cb1.isChecked = true
+			binding.cb2.isChecked = true
+		}
+		if (cat == 4)
+			binding.cb3.isChecked = true
+		if (cat == 5) {
+			binding.cb1.isChecked = true
+			binding.cb3.isChecked = true
+		}
+		if (cat == 6) {
+			binding.cb2.isChecked = true
+			binding.cb3.isChecked = true
+		}
+		if (cat == 7) {
+			binding.cb1.isChecked = true
+			binding.cb2.isChecked = true
+			binding.cb3.isChecked = true
+		}
+		// END Checkbox check for checks
+		// START Click listeners for Checkboxes
+		binding.cb1.setOnClickListener {
+			if (binding.cb1.isChecked)
+				cat += 1
+			else if (!binding.cb1.isChecked)
+				cat -= 1
+		}
+		binding.cb2.setOnClickListener {
+			if (binding.cb2.isChecked)
+				cat += 2
+			else if (!binding.cb2.isChecked)
+				cat -= 2
+		}
+		binding.cb3.setOnClickListener {
+			if (binding.cb3.isChecked)
+				cat += 4
+			else if (!binding.cb3.isChecked)
+				cat -= 4
+		}
+		// END Click listeners for Checkboxes
 		binding.btnCancel.setOnClickListener {
-			hideKeyboard()
-			requireActivity().supportFragmentManager.popBackStack()
+			exitEditRecipes(cat)    // feed the category back to either the master or recipe for update
 		}
 		binding.btnSave.setOnClickListener {
-			recipeList.recipe[pos].ingredients = binding.etRecipe.text.toString()
-			requireContext().openFileOutput(DEFAULT_RECIPE_FILE, Context.MODE_PRIVATE).use {
-				val jsonToFile = Json.encodeToString(recipeList)
-				it.write(jsonToFile.toByteArray())
+			if (master) {
+				masterRecipeList.recipe[pos].ingredients = binding.etRecipe.text.toString()
+				requireContext().openFileOutput(DEFAULT_RECIPE_FILE, Context.MODE_PRIVATE).use {
+					val jsonToFile = Json.encodeToString(masterRecipeList)
+					it.write(jsonToFile.toByteArray())
+				}
 			}
-			hideKeyboard()
-			requireActivity().supportFragmentManager.popBackStack()
+			else {
+				recipeList.recipe[pos].ingredients = binding.etRecipe.text.toString()
+				requireContext().openFileOutput(DEFAULT_RECIPE_FILE, Context.MODE_PRIVATE).use {
+					val jsonToFile = Json.encodeToString(recipeList)
+					it.write(jsonToFile.toByteArray())
+				}
+			}
+			exitEditRecipes(cat) // feed the category back to either the master or recipe for update
 		}
+	}
+	private fun exitEditRecipes(cat: Int) {
+		val imm: InputMethodManager = requireContext().getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+		imm.hideSoftInputFromWindow(requireView().windowToken, 0)
+
+		if (master)
+			masterRecipeList.recipe[pos].cat = cat
+		else
+			recipeList.recipe[pos].cat = cat
+
+		requireActivity().supportFragmentManager.popBackStack()
 	}
 	override fun onDestroyView() {
 		super.onDestroyView()
 		_binding = null
-	}
-	private fun hideKeyboard() {
-		val imm: InputMethodManager = requireContext().getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
-		imm.hideSoftInputFromWindow(requireView().windowToken, 0)
 	}
 }
 /*
