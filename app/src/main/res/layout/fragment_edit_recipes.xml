@@ -28,21 +28,35 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/textInputLayout"
+        android:id="@+id/textInputLayout1"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:layout_constraintTop_toBottomOf="@id/tv_recipe">
-    <com.google.android.material.textfield.TextInputEditText
-        android:id="@+id/et_recipe"
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/et_recipe"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="36dp"
+            android:inputType="textMultiLine"
+            android:hint="@string/str_recipe_ing_hint"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tv_recipe" />
+    </com.google.android.material.textfield.TextInputLayout>
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/textInputLayout2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="36dp"
-        android:inputType="textMultiLine"
-        android:hint="@string/str_recipe_ing_hint"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tv_recipe" />
-
+        app:layout_constraintTop_toBottomOf="@+id/textInputLayout1">
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/et_instructions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:inputType="textMultiLine"
+            android:hint="@string/str_recipe_instr_hint" />
     </com.google.android.material.textfield.TextInputLayout>
 
     <CheckBox
@@ -52,7 +66,7 @@
         android:layout_weight="1"
         android:text="@string/str_meal1"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/textInputLayout"/>
+        app:layout_constraintTop_toBottomOf="@id/textInputLayout2"/>
     <CheckBox
         android:id="@+id/cb2"
         android:layout_width="wrap_content"
@@ -60,7 +74,7 @@
         android:layout_weight="1"
         android:text="@string/str_meal2"
         app:layout_constraintStart_toEndOf="@id/cb1"
-        app:layout_constraintTop_toBottomOf="@id/textInputLayout"/>
+        app:layout_constraintTop_toBottomOf="@id/textInputLayout2"/>
     <CheckBox
         android:id="@+id/cb3"
         android:layout_width="wrap_content"
@@ -68,7 +82,7 @@
         android:layout_weight="1"
         android:text="@string/str_meal3"
         app:layout_constraintStart_toEndOf="@id/cb2"
-        app:layout_constraintTop_toBottomOf="@id/textInputLayout"/>
+        app:layout_constraintTop_toBottomOf="@id/textInputLayout2"/>
 
     <Button
         android:id="@+id/btn_Save"
@@ -87,4 +101,28 @@
         android:text="@string/str_cancel"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintBottom_toBottomOf="parent" />
+
+    <RadioGroup
+        android:id="@+id/rbMealOrSide"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:checkedButton="@id/rbMeal"
+        app:layout_constraintTop_toBottomOf="@id/cb3"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <RadioButton
+            android:id="@+id/rbMeal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/str_meal" />
+
+        <RadioButton
+            android:id="@+id/rbSide"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/str_side" />
+
+    </RadioGroup>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

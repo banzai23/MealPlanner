@@ -19,13 +19,25 @@ class ShoppingListFragment : Fragment(R.layout.fragment_shopping_list) {
 		val binding = FragmentShoppingListBinding.bind(view)
 		_binding = binding
 
-		binding.tvTitle.text = "Shopping List"
+		binding.tvTitle.text = getString(R.string.str_shopping_list)
 
 		val getAll: MutableList<String> = mutableListOf()
-		for (x in 0 until mealPlanList.recipe.size) {
-			val split = mealPlanList.recipe[x].ingredients.trim().split("\n")
+		var totalSize = masterMealPlanList.breakfast.size
+		for (x in 0 until totalSize) {
+			val split = masterMealPlanList.breakfast[x].ingredients.trim().split("\n")
 			getAll.addAll(split)
 		}
+		totalSize = masterMealPlanList.lunch.size
+		for (x in 0 until totalSize) {
+			val split = masterMealPlanList.lunch[x].ingredients.trim().split("\n")
+			getAll.addAll(split)
+		}
+		totalSize = masterMealPlanList.dinner.size
+		for (x in 0 until totalSize) {
+			val split = masterMealPlanList.dinner[x].ingredients.trim().split("\n")
+			getAll.addAll(split)
+		}
+
 		val allIngredients = getAll.toSet().toMutableList()
 		binding.recyclerShoppingList.layoutManager = LinearLayoutManager(requireContext())
 		binding.recyclerShoppingList.adapter = RecyclerAdapterShoppingList(allIngredients)

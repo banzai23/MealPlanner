@@ -33,21 +33,24 @@ const val BREAKFAST_CAT = 1
 const val LUNCH_CAT = 2
 const val DINNER_CAT = 4
 
-lateinit var mealPlanList: MealPlan     // for RecyclerMealPlan
-lateinit var masterRecipeList: Recipe   // for storing every recipe
-lateinit var recipeList: Recipe         // for RecyclerAdapter
-var mealPlanOffset = 0
+lateinit var masterRecipeList: Recipe       // for storing every recipe
+lateinit var recipeList: Recipe             // for RecyclerAdapter
+lateinit var masterMealPlanList: MealPlan   // for storing every meal
+lateinit var mealPlanList: Recipe           // for RecyclerMealPlan
+var mealPlanMode = BREAKFAST_CAT            // defaults to viewing breakfast
+var isMealMode = true                       // defaults to meals, not sides
 var assetsLoaded: Boolean = false
 
 @Serializable
 data class Recipe(var recipe: MutableList<RecipeX>)
 @Serializable
-data class RecipeX(var name: String = "", var ingredients: String = "", var cat: Int)
+data class RecipeX(var name: String = "", var ingredients: String = "",
+                   var instructions: String = "", var cat: Int, var isMeal: Boolean)
 @Serializable
-data class MealPlan(var recipe: MutableList<MealPlanX>, var startDate: Long)
-@Serializable
-data class MealPlanX(var name: String = "", var ingredients: String = "")
-
+data class MealPlan(var breakfast: MutableList<RecipeX>,
+                    var lunch: MutableList<RecipeX>,
+                    var dinner: MutableList<RecipeX>,
+                    var startDate: Long)
 
 interface ActivityInterface {
 	fun updateRecyclerDate(date: Long)
@@ -79,7 +82,7 @@ class MainActivity : AppCompatActivity(), ActivityInterface {
 			masterRecipeList.recipe.sortBy { it.toString() }
 
 			recipeList = Recipe(mutableListOf())
-			updateRecipeList(mealPlanOffset)
+			updateRecipeList(mealPlanMode)
 
 			inputStream =
 		//	try {
@@ -88,7 +91,13 @@ class MainActivity : AppCompatActivity(), ActivityInterface {
 				this.resources.openRawResource(R.raw.defaultmealplan)
 	//		}
 			inputString = inputStream.bufferedReader().use { it.readText() }
-			mealPlanList = Json.decodeFromString(inputString)
+			masterMealPlanList = Json.decodeFromString(inputString)
+			mealPlanList = Recipe(mutableListOf())
+			when (mealPlanMode) {
+				BREAKFAST_CAT -> mealPlanList.recipe.addAll(masterMealPlanList.breakfast)
+				LUNCH_CAT -> mealPlanList.recipe.addAll(masterMealPlanList.lunch)
+				else -> mealPlanList.recipe.addAll(masterMealPlanList.dinner)
+			}
 
 			assetsLoaded = true
 		}
@@ -108,9 +117,8 @@ class MainActivity : AppCompatActivity(), ActivityInterface {
 		// set up RecyclerMP
 		val mpClickListener = object : RecyclerClickListener {
 			override fun onClick(view: View, position: Int) {
-				val pos = position+mealPlanOffset
-				if(mealPlanList.recipe[pos].name != DEFAULT_EMPTY_RECIPE) {
-					fragmentTransaction(ViewMPRecipeFragment(pos), "viewMPRecipe")
+				if(mealPlanList.recipe[position].name != DEFAULT_EMPTY_RECIPE) {
+					fragmentTransaction(ViewMPRecipeFragment(position), "viewMPRecipe")
 				}
 			}
 		}
@@ -135,10 +143,37 @@ class MainActivity : AppCompatActivity(), ActivityInterface {
 		binding.recyclerRecipes.layoutManager = LinearLayoutManager(this)
 		binding.recyclerRecipes.adapter = RecyclerAdapterRecipes(recClickListener, recLongClickListener)
 
-		activityBinding.tabLayout.addOnTabSelectedListener( object : TabLayout.OnTabSelectedListener {
-			override fun onTabSelected(tab: TabLayout.Tab?) {
-				mealPlanOffset = tab!!.position * 7
-				updateRecipeList(mealPlanOffset)
+		binding.tabsBLD.addOnTabSelectedListener( object : TabLayout.OnTabSelectedListener {
+			override fun onTabSelected(tab: TabLayout.Tab) {
+				if (tab.position == 0) {
+					mealPlanMode = BREAKFAST_CAT
+					mealPlanList.recipe = masterMealPlanList.breakfast
+				} else if (tab.position == 1) {
+					mealPlanMode = LUNCH_CAT
+					mealPlanList.recipe = masterMealPlanList.lunch
+				} else {
+					mealPlanMode = DINNER_CAT
+					mealPlanList.recipe = masterMealPlanList.dinner
+				}
+				updateRecipeList(mealPlanMode)
+				binding.recyclerMP.adapter!!.notifyDataSetChanged()
+				binding.recyclerRecipes.adapter!!.notifyDataSetChanged()
+			}
+			override fun onTabReselected(tab: TabLayout.Tab?) {
+				println("Tab reselected!")
+			}
+			override fun onTabUnselected(tab: TabLayout.Tab?) {
+				println("Tab unselected!")
+			}
+		})
+		binding.tabsMS.addOnTabSelectedListener( object : TabLayout.OnTabSelectedListener {
+			override fun onTabSelected(tab: TabLayout.Tab) {
+				if (tab.position == 0)
+					isMealMode = true
+				else if (tab.position == 1)
+					isMealMode = false
+
+				binding.recyclerDate.adapter!!.notifyDataSetChanged()
 				binding.recyclerMP.adapter!!.notifyDataSetChanged()
 				binding.recyclerRecipes.adapter!!.notifyDataSetChanged()
 			}
@@ -156,7 +191,7 @@ class MainActivity : AppCompatActivity(), ActivityInterface {
 			true
 		}
 		R.id.action_random -> {
-			updateRecipeListRandom(mealPlanOffset)
+			updateRecipeListRandom(mealPlanMode)
 			true
 		}
 		R.id.action_list -> {
@@ -199,7 +234,7 @@ class MainActivity : AppCompatActivity(), ActivityInterface {
 		transaction.commit()
 	}
 	override fun updateRecyclerDate(date: Long) {
-		mealPlanList.startDate = date
+		masterMealPlanList.startDate = date
 		activityBinding.contentMain.recyclerDate.adapter!!.notifyItemRangeChanged(0, DEFAULT_NUM_DAYS)
 	}
 	override fun updateRecyclerMP() {
@@ -210,14 +245,14 @@ class MainActivity : AppCompatActivity(), ActivityInterface {
 	}
 	override fun saveDefaultPlan() {
 		this.openFileOutput(DEFAULT_PLAN_FILE, Context.MODE_PRIVATE).use {
-			val jsonToFile = Json.encodeToString(mealPlanList)
+			val jsonToFile = Json.encodeToString(masterMealPlanList)
 			it.write(jsonToFile.toByteArray())
 		}
 	}
-	private fun updateRecipeList(offset: Int) {
+	private fun updateRecipeList(mode: Int) {
 		recipeList.recipe.clear()
-		when (offset) {
-			0 -> {
+		when (mode) {
+			BREAKFAST_CAT -> {
 				for (x in 0 until masterRecipeList.recipe.size) {
 					val cat = masterRecipeList.recipe[x].cat
 					if (cat == BREAKFAST_CAT ||
@@ -228,7 +263,7 @@ class MainActivity : AppCompatActivity(), ActivityInterface {
 					}
 				}
 			}
-			7 -> {
+			LUNCH_CAT -> {
 				for (x in 0 until masterRecipeList.recipe.size) {
 					val cat = masterRecipeList.recipe[x].cat
 					if (cat == LUNCH_CAT ||
@@ -239,16 +274,16 @@ class MainActivity : AppCompatActivity(), ActivityInterface {
 					}
 				}
 			}
-			14 -> {
+			DINNER_CAT -> {
 				for (x in 0 until masterRecipeList.recipe.size) {
 					recipeList.recipe.add(masterRecipeList.recipe[x])
 				}
 			}
 		}
 	}
-	private fun updateRecipeListRandom(offset: Int) {
-		if (offset != 14) {
-			for (x in offset until offset + 7) {
+	private fun updateRecipeListRandom(mode: Int) {
+		if (mode != DINNER_CAT) {
+			for (x in 0 until mealPlanList.recipe.size) {
 				val random = (0 until recipeList.recipe.size).random()
 				mealPlanList.recipe[x].name = recipeList.recipe[random].name
 				mealPlanList.recipe[x].ingredients = recipeList.recipe[random].ingredients
@@ -256,13 +291,10 @@ class MainActivity : AppCompatActivity(), ActivityInterface {
 		}
 		else
 		{
-			for (x in offset until offset+7) {
+			for (x in 0 until mealPlanList.recipe.size) {
 				var random = (0 until recipeList.recipe.size).random()
 				var cat = recipeList.recipe[random].cat
-				while (cat != DINNER_CAT &&
-						cat != DINNER_CAT + BREAKFAST_CAT &&
-						cat != DINNER_CAT + LUNCH_CAT &&
-						cat != DINNER_CAT + BREAKFAST_CAT + LUNCH_CAT) {
+				while (cat < DINNER_CAT) {
 					random = (0 until recipeList.recipe.size).random()
 					cat = recipeList.recipe[random].cat
 				}
@@ -324,7 +356,7 @@ class RecyclerAdapterMealPlan(rvClickListener: RecyclerClickListener, private va
 			tvItem.text = mealPlanList.recipe[position].name
 		}
 	}
-	override fun getItemCount() = DEFAULT_NUM_DAYS
+	override fun getItemCount() = mealPlanList.recipe.size
 
 	override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
 		val inflatedView = LayoutInflater.from(parent.context).inflate(
@@ -335,7 +367,7 @@ class RecyclerAdapterMealPlan(rvClickListener: RecyclerClickListener, private va
 		return ViewHolder(inflatedView)
 	}
 	override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-		holder.bind(position+mealPlanOffset)
+		holder.bind(position)
 		holder.itemView.setOnClickListener(object : View.OnClickListener {
 			override fun onClick(view: View) {
 				clickListener.onClick(view, holder.adapterPosition)
@@ -363,7 +395,7 @@ class RecyclerAdapterDate() :
 	override fun onBindViewHolder(holder: ViewHolder, position: Int) {
 		val gc = GregorianCalendar()
 		val today = gc.get(Calendar.DATE)
-		gc.timeInMillis =  mealPlanList.startDate
+		gc.timeInMillis =  masterMealPlanList.startDate
 		gc.add(Calendar.DATE, position)
 
 		if (gc.get(Calendar.DATE) == today) {
@@ -392,8 +424,8 @@ fun setMPTouchHelper(recycler: RecyclerView): ItemTouchHelper {
 		): Boolean {
 			if (source.itemViewType != target.itemViewType)
 				return false
-			val sourcePos = source.adapterPosition+mealPlanOffset
-			val targetPos = target.adapterPosition+mealPlanOffset
+			val sourcePos = source.adapterPosition
+			val targetPos = target.adapterPosition
 			val saveSource = mealPlanList.recipe[sourcePos].copy()
 			mealPlanList.recipe[sourcePos] = mealPlanList.recipe[targetPos].copy()
 			mealPlanList.recipe[targetPos] = saveSource
@@ -403,7 +435,7 @@ fun setMPTouchHelper(recycler: RecyclerView): ItemTouchHelper {
 			return true
 		}
 		override fun onSwiped(viewHolder: RecyclerView.ViewHolder, swipeDir: Int) {
-			val pos = viewHolder.adapterPosition+mealPlanOffset
+			val pos = viewHolder.adapterPosition
 			mealPlanList.recipe[pos].name = DEFAULT_EMPTY_RECIPE
 			mealPlanList.recipe[pos].ingredients = "  "
 
@@ -442,7 +474,7 @@ private class SetDragListener(val posOfView: Int, val recycler: RecyclerView) : 
 				//  (v as? TextView)?.setBackgroundColor(Color.TRANSPARENT)
 				//  v.invalidate()
 				val posOfDragged: Int = item.text.toString().toInt()
-				val pos = posOfView+mealPlanOffset
+				val pos = posOfView
 				mealPlanList.recipe[pos].name = recipeList.recipe[posOfDragged].name
 				mealPlanList.recipe[pos].ingredients = recipeList.recipe[posOfDragged].ingredients
 				recycler.adapter!!.notifyItemChanged(posOfView)
@@ -460,10 +492,7 @@ private class SetDragListener(val posOfView: Int, val recycler: RecyclerView) : 
 	}
 }
 
-// TODO: Separate 'meals' and 'sides' in recipes, maybe add another object?
-// TODO: Add radio button when editing recipes, <*> Meal < > Side
 // TODO: When clicking or something, or maybe a new context menu, add sides to meals
 // TODO: Upload recipe from a website -- website parser or Copy/paste parser
-// TODO: In object 'recipe' add instructions below, and quantity next to the ingredients.
-// TODO: In object 'recipe' add Header option, with cooktime and preptime if they are available
+// TODO: cup(s) ounce(s) tablespoon(s) teaspoon(s)
 // TODO: Save shopping list, only 1 no duplicates. shoppingList

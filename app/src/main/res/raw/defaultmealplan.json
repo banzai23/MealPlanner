@@ -1,89 +1,154 @@
 {
-  "recipe": [
+  "breakfast": [
 	{
 	  "name": "Breakfast",
-	  "ingredients": "Eggs and Sausage"
+	  "ingredients": "Eggs and Sausage",
+	  "instructions": "",
+	  "cat": 1,
+	  "isMeal": true
 	},
 	{
 	  "name": "Breakfast",
-	  "ingredients": "Eggs and Sausage"
+	  "ingredients": "Eggs and Sausage",
+	  "instructions": "",
+	  "cat": 1,
+	  "isMeal": true
 	},
 	{
 	  "name": "Breakfast",
-	  "ingredients": "Eggs and Sausage"
+	  "ingredients": "Eggs and Sausage",
+	  "instructions": "",
+	  "cat": 1,
+	  "isMeal": true
 	},
 	{
 	  "name": "Breakfast",
-	  "ingredients": "Eggs and Sausage"
+	  "ingredients": "Eggs and Sausage",
+	  "instructions": "",
+	  "cat": 1,
+	  "isMeal": true
 	},
 	{
 	  "name": "Breakfast",
-	  "ingredients": "Eggs and Sausage"
+	  "ingredients": "Eggs and Sausage",
+	  "instructions": "",
+	  "cat": 1,
+	  "isMeal": true
 	},
 	{
 	  "name": "Breakfast",
-	  "ingredients": "Eggs and Sausage"
+	  "ingredients": "Eggs and Sausage",
+	  "instructions": "",
+	  "cat": 1,
+	  "isMeal": true
 	},
 	{
 	  "name": "Breakfast",
-	  "ingredients": "Eggs and Sausage"
-	},
+	  "ingredients": "Eggs and Sausage",
+	  "instructions": "",
+	  "cat": 1,
+	  "isMeal": true
+	}],
+  "lunch": [
 	{
 	  "name": "Peanut Butter Jelly",
-	  "ingredients": "1 peanut\n2 jelly"
+	  "ingredients": "1 peanut\n2 jelly",
+	  "instructions": "",
+	  "cat": 2,
+	  "isMeal": true
 	},
 	{
 	  "name": "Chicken and Rice",
-	  "ingredients": "1 chicken\n2 rice"
+	  "ingredients": "1 chicken\n2 rice",
+	  "instructions": "",
+	  "cat": 6,
+	  "isMeal": true
 	},
 	{
 	  "name": "Chicken and Mashed Potatoes",
-	  "ingredients": "1 chicken\n2 potatoes"
+	  "ingredients": "1 chicken\n2 potatoes",
+	  "instructions": "",
+	  "cat": 6,
+	  "isMeal": true
 	},
 	{
 	  "name": "Quinoa Salad",
-	  "ingredients": "quinoa salad duh"
+	  "ingredients": "quinoa salad duh",
+	  "instructions": "",
+	  "cat": 2,
+	  "isMeal": true
 	},
 	{
 	  "name": "Tacos",
-	  "ingredients": "1 taco\n2 beef"
+	  "ingredients": "1 taco\n2 beef",
+	  "instructions": "",
+	  "cat": 6,
+	  "isMeal": true
 	},
 	{
 	  "name": "Baked Potatoes",
-	  "ingredients": "Potatoes"
+	  "ingredients": "Potatoes",
+	  "instructions": "",
+	  "cat": 6,
+	  "isMeal": true
 	},
 	{
 	  "name": "Hamburgers",
-	  "ingredients": "Beef N Cheese"
-	},
+	  "ingredients": "Beef N Cheese",
+	  "instructions": "",
+	  "cat": 6,
+	  "isMeal": true
+	}],
+  "dinner": [
 	{
 	  "name": "Peanut Butter Jelly",
-	  "ingredients": "1 peanut\n2 jelly"
+	  "ingredients": "1 peanut\n2 jelly",
+	  "instructions": "",
+	  "cat": 6,
+	  "isMeal": true
 	},
 	{
 	  "name": "Chicken and Rice",
-	  "ingredients": "1 chicken\n2 rice"
+	  "ingredients": "1 chicken\n2 rice",
+	  "instructions": "",
+	  "cat": 6,
+	  "isMeal": true
 	},
 	{
 	  "name": "Chicken and Mashed Potatoes",
-	  "ingredients": "1 chicken\n2 potatoes"
+	  "ingredients": "1 chicken\n2 potatoes",
+	  "instructions": "",
+	  "cat": 4,
+	  "isMeal": true
 	},
 	{
 	  "name": "Quinoa Salad",
-	  "ingredients": "quinoa salad duh"
+	  "ingredients": "quinoa salad duh",
+	  "instructions": "",
+	  "cat": 6,
+	  "isMeal": true
 	},
 	{
 	  "name": "Tacos",
-	  "ingredients": "1 taco\n2 beef"
+	  "ingredients": "1 taco\n2 beef",
+	  "instructions": "",
+	  "cat": 6,
+	  "isMeal": true
 	},
 	{
 	  "name": "Baked Potatoes",
-	  "ingredients": "Potatoes"
+	  "ingredients": "Potatoes",
+	  "instructions": "",
+	  "cat": 6,
+	  "isMeal": true
 	},
 	{
 	  "name": "Hamburgers",
-	  "ingredients": "Beef N Cheese"
+	  "ingredients": "Beef N Cheese",
+	  "instructions": "",
+	  "cat": 6,
+	  "isMeal": true
 	}
   ],
-  "startDate": 1609787401000
+  "startDate": 1610870400000
 }

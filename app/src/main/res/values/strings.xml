@@ -6,6 +6,10 @@
     <string name="str_meal2">Lunch</string>
     <string name="str_meal3">Dinner</string>
     <string name="str_recipes">Recipes</string>
+    <string name="str_meals">Meals</string>
+    <string name="str_meal">Meal</string>
+    <string name="str_sides">Sides</string>
+    <string name="str_side">Side Dish</string>
     <string name="str_add_new">Add New</string>
     <string name="str_new">New</string>
     <string name="str_randomize">Random</string>
@@ -19,6 +23,8 @@
     <string name="str_back">Back</string>
     <string name="str_recipe_title">Recipes:</string>
     <string name="str_recipe_ing_hint">Recipe Ingredients</string>
+    <string name="str_recipe_instr_hint">Instructions</string>
+    <string name="str_shopping_list">Shopping List</string>
     <string name="str_delete">Delete</string>
     <string name="str_edit">Edit</string>
 
@@ -28,5 +34,7 @@
     <string name="menu_random">Random</string>
     <string name="menu_list">Shopping List</string>
     <string name="menu_rm">Recipe Manager</string>
+    <!-- warning strings -->
+    <string name="warn_noCat">"Must save under at least 1 meal category\\nBreakfast, Lunch, or Dinner"</string>
 
 </resources>

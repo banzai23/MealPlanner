@@ -3,77 +3,107 @@
 	{
 		"name": "Peanut Butter Jelly",
 		"ingredients": "1 peanut\n2 jelly",
-		"cat": 2
+	  	"instructions": "",
+		"cat": 2,
+	  	"isMeal": true
 	},
 	{
-		"name": "Chicken and Rice",
-		"ingredients": "1 chicken\n2 rice",
-		"cat": 4
+		"name": "Chicken",
+		"ingredients": "1 chicken",
+	 	"instructions": "",
+		"cat": 4,
+	  	"isMeal": true
 	},
 	{
-		"name": "Chicken and Mashed Potatoes",
-		"ingredients": "1 chicken\n2 potatoes",
-		"cat": 4
+		"name": "Mashed Potatoes",
+		"ingredients": "2 potatoes",
+	  	"instructions": "",
+		"cat": 4,
+	  	"isMeal": false
 	},
 	{
 		"name": "Quinoa Salad",
 		"ingredients": "quinoa salad duh",
-		"cat": 6
+	  	"instructions": "",
+		"cat": 6,
+	  	"isMeal": false
 	},
 	{
 		"name": "Tacos",
 		"ingredients": "1 taco\n2 beef",
-	  	"cat": 6
+		"instructions": "",
+	  	"cat": 6,
+	  	"isMeal": true
 	},
 	{
 		"name": "Baked Potatoes",
 		"ingredients": "Potatoes",
-	  	"cat": 4
+		"instructions": "",
+	  	"cat": 4,
+	  	"isMeal": false
 	},
 	{
 		"name": "Hamburgers",
 		"ingredients": "Beef N Cheese",
-	  	"cat": 4
+	 	"instructions": "",
+	  	"cat": 4,
+	  	"isMeal": true
 	},
 	{
 		"name": "Hot Dogs",
 		"ingredients": "Hot Dogs",
-	  	"cat": 6
+	  	"instructions": "",
+	  	"cat": 6,
+	  	"isMeal": true
 	},
 	{
 		"name": "Breakfast",
 		"ingredients": "Eggs and Sausage",
-	  	"cat": 1
+	  	"instructions": "",
+	  	"cat": 1,
+	  	"isMeal": true
 	},
 	{
 		"name": "Taco Soup",
 		"ingredients": "1 can Kcatney beans\n1 can Black beans",
-	  	"cat": 6
+	  	"instructions": "",
+	  	"cat": 6,
+	 	"isMeal": true
 	},
 	{
 		"name": "Caesar Salad",
 		"ingredients": "Romaine and Caesar dressing",
-	  	"cat": 6
+	  	"instructions": "",
+	  	"cat": 6,
+	  	"isMeal": false
 	},
 	{
 		"name": "Steak and Potatoes",
 		"ingredients": "1 steak\n2 potatoes",
-	  	"cat": 4
+	  	"instructions": "",
+	  	"cat": 4,
+	  	"isMeal": true
 	},
 	{
 		"name": "Soup, Salad, and Breadsticks",
 		"ingredients": "SSB",
-	  	"cat": 6
+	  	"instructions": "",
+	  	"cat": 6,
+	  	"isMeal": true
 	},
 	{
 		"name": "Bacon, Lettuce, Tomato",
 		"ingredients": "Bacon, Lettuce, Tomatoes",
-	  	"cat": 2
+	  	"instructions": "",
+	  	"cat": 2,
+	  	"isMeal": true
 	},
 	{
 		"name": "Cilantro Kale Advocado",
 		"ingredients": "Cilantro\nKale\nAvocado",
-	  	"cat": 6
+	  	"instructions": "",
+	  	"cat": 6,
+	  	"isMeal": false
 	}
 	]
 }

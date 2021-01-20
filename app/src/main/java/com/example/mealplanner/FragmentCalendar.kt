@@ -32,10 +32,10 @@ class CalendarFragment : Fragment(R.layout.fragment_calendar) {
 
 		binding.btnSelectDate.setOnClickListener {
 			// save what we were looking at before on the MealPlanAdapter
-			gc.timeInMillis = mealPlanList.startDate
+			gc.timeInMillis = masterMealPlanList.startDate
 			var filename: String = gc.get(Calendar.WEEK_OF_YEAR).toString()
 			requireContext().openFileOutput(filename, Context.MODE_PRIVATE).use {
-				val jsonToFile = Json.encodeToString(mealPlanList)
+				val jsonToFile = Json.encodeToString(masterMealPlanList)
 				it.write(jsonToFile.toByteArray())
 			}
 			// done saving, now load
@@ -50,13 +50,26 @@ class CalendarFragment : Fragment(R.layout.fragment_calendar) {
 			try {
 					inputStream = requireContext().openFileInput(filename)
 					val inputString = inputStream.bufferedReader().use { it.readText() }
-					mealPlanList = Json.decodeFromString(inputString)
+					masterMealPlanList = Json.decodeFromString(inputString)
 				} catch (e: FileNotFoundException) {
-					for (x in 0 until mealPlanList.recipe.size) {
-						mealPlanList.recipe[x].name = DEFAULT_EMPTY_RECIPE
-						mealPlanList.recipe[x].ingredients = "  "
+					for (x in 0 until 7) {
+						masterMealPlanList.breakfast[x].name = DEFAULT_EMPTY_RECIPE
+					}
+					for (x in 7 until 14) {
+						masterMealPlanList.lunch[x].name = DEFAULT_EMPTY_RECIPE
+					}
+					for (x in 14 until 21) {
+						masterMealPlanList.dinner[x].name = DEFAULT_EMPTY_RECIPE
 					}
 				}
+
+			if (mealPlanMode == BREAKFAST_CAT)
+				mealPlanList.recipe = masterMealPlanList.breakfast
+			else if (mealPlanMode == LUNCH_CAT)
+				mealPlanList.recipe = masterMealPlanList.lunch
+			else
+				mealPlanList.recipe = masterMealPlanList.dinner
+
 			// done loading, now update recyclers
 			updateAct.updateRecyclerDate(selectedDateToSunday)
 			updateAct.updateRecyclerMP()
@@ -65,6 +78,12 @@ class CalendarFragment : Fragment(R.layout.fragment_calendar) {
 			actInt.saveDefaultPlan()
 			requireActivity().supportFragmentManager.popBackStack()
 		}
+		/*
+		binding.btnSelectDate.setOnClickListener {
+			gc.timeInMillis = binding.calendarView.date
+			val filename = gc.get(Calendar.WEEK_OF_YEAR).toString()
+			requireContext().deleteFile(filename)
+		} */
 		binding.btnCancelCal.setOnClickListener {
 			requireActivity().supportFragmentManager.popBackStack()
 		}

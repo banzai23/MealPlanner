@@ -7,6 +7,7 @@ import android.view.View
 import android.view.inputmethod.InputMethodManager
 import androidx.fragment.app.Fragment
 import com.example.mealplanner.databinding.FragmentEditRecipesBinding
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
@@ -19,36 +20,38 @@ class EditRecipeFragment(position: Int, editMaster: Boolean): Fragment(R.layout.
 		val binding = FragmentEditRecipesBinding.bind(view)
 		var cat: Int
 		_binding = binding
-		if (master) {
-			binding.etRecipe.setText(masterRecipeList.recipe[pos].ingredients)
-			binding.tvRecipe.text = masterRecipeList.recipe[pos].name
-			cat = masterRecipeList.recipe[pos].cat
-		}
-		else {
-			binding.etRecipe.setText(recipeList.recipe[pos].ingredients)
-			binding.tvRecipe.text = recipeList.recipe[pos].name
-			cat = recipeList.recipe[pos].cat
-		}
+
+		val editList: Recipe =
+		if (master)
+			masterRecipeList
+		else
+			recipeList
+
+		binding.etRecipe.setText(editList.recipe[pos].ingredients)
+		binding.etInstructions.setText(editList.recipe[pos].instructions)
+		binding.tvRecipe.text = editList.recipe[pos].name
+		cat = editList.recipe[pos].cat
+
 		// START Checkbox check for checks
-		if (cat == 1)
+		if (cat == BREAKFAST_CAT)
 			binding.cb1.isChecked = true
-		if (cat == 2)
+		if (cat == LUNCH_CAT)
 			binding.cb2.isChecked = true
-		if (cat == 3) {
+		if (cat == BREAKFAST_CAT + LUNCH_CAT) {
 			binding.cb1.isChecked = true
 			binding.cb2.isChecked = true
 		}
-		if (cat == 4)
+		if (cat == DINNER_CAT)
 			binding.cb3.isChecked = true
-		if (cat == 5) {
+		if (cat == BREAKFAST_CAT + DINNER_CAT) {
 			binding.cb1.isChecked = true
 			binding.cb3.isChecked = true
 		}
-		if (cat == 6) {
+		if (cat == LUNCH_CAT + DINNER_CAT) {
 			binding.cb2.isChecked = true
 			binding.cb3.isChecked = true
 		}
-		if (cat == 7) {
+		if (cat == BREAKFAST_CAT + LUNCH_CAT + DINNER_CAT) {
 			binding.cb1.isChecked = true
 			binding.cb2.isChecked = true
 			binding.cb3.isChecked = true
@@ -73,36 +76,48 @@ class EditRecipeFragment(position: Int, editMaster: Boolean): Fragment(R.layout.
 			else if (!binding.cb3.isChecked)
 				cat -= 4
 		}
+
+		if (!editList.recipe[pos].isMeal)
+			binding.rbSide.isChecked = true
+
+		binding.rbMealOrSide.setOnClickListener {
+			editList.recipe[pos].isMeal = binding.rbMeal.isChecked
+		}
 		// END Click listeners for Checkboxes
 		binding.btnCancel.setOnClickListener {
-			exitEditRecipes(cat)    // feed the category back to either the master or recipe for update
+			exitEditRecipes()    // feed the category back to either the master or recipe for update
 		}
 		binding.btnSave.setOnClickListener {
-			if (master) {
-				masterRecipeList.recipe[pos].ingredients = binding.etRecipe.text.toString()
-				requireContext().openFileOutput(DEFAULT_RECIPE_FILE, Context.MODE_PRIVATE).use {
-					val jsonToFile = Json.encodeToString(masterRecipeList)
-					it.write(jsonToFile.toByteArray())
+			if (cat in 1..7) {
+				if (master) {
+					masterRecipeList.recipe[pos].cat = cat
+					masterRecipeList.recipe[pos].ingredients = binding.etRecipe.text.toString()
+					masterRecipeList.recipe[pos].instructions = binding.etInstructions.text.toString()
+					requireContext().openFileOutput(DEFAULT_RECIPE_FILE, Context.MODE_PRIVATE).use {
+						val jsonToFile = Json.encodeToString(masterRecipeList)
+						it.write(jsonToFile.toByteArray())
+					}
+				} else {
+					recipeList.recipe[pos].cat = cat
+					recipeList.recipe[pos].ingredients = binding.etRecipe.text.toString()
+					recipeList.recipe[pos].instructions = binding.etInstructions.text.toString()
+					requireContext().openFileOutput(DEFAULT_RECIPE_FILE, Context.MODE_PRIVATE).use {
+						val jsonToFile = Json.encodeToString(masterRecipeList)
+						// even though recipeList was update, we still always
+						// save the master because that has every recipe
+						it.write(jsonToFile.toByteArray())
+					}
 				}
+				exitEditRecipes() // feed the category back to either the master or recipe for update
 			}
 			else {
-				recipeList.recipe[pos].ingredients = binding.etRecipe.text.toString()
-				requireContext().openFileOutput(DEFAULT_RECIPE_FILE, Context.MODE_PRIVATE).use {
-					val jsonToFile = Json.encodeToString(recipeList)
-					it.write(jsonToFile.toByteArray())
-				}
+				Snackbar.make(binding.cb1, getString(R.string.warn_noCat), 5)
 			}
-			exitEditRecipes(cat) // feed the category back to either the master or recipe for update
 		}
 	}
-	private fun exitEditRecipes(cat: Int) {
+	private fun exitEditRecipes() {
 		val imm: InputMethodManager = requireContext().getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
 		imm.hideSoftInputFromWindow(requireView().windowToken, 0)
-
-		if (master)
-			masterRecipeList.recipe[pos].cat = cat
-		else
-			recipeList.recipe[pos].cat = cat
 
 		requireActivity().supportFragmentManager.popBackStack()
 	}
