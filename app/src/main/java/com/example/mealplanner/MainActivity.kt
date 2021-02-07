@@ -4,9 +4,9 @@ import android.content.ClipData
 import android.content.ClipDescription
 import android.content.Context
 import android.content.Intent
-import android.graphics.Typeface
 import android.os.Bundle
 import android.view.*
+import android.widget.PopupMenu
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
@@ -19,6 +19,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import java.io.FileNotFoundException
 import java.io.InputStream
 import java.text.DateFormat
 import java.text.SimpleDateFormat
@@ -37,8 +38,7 @@ lateinit var masterRecipeList: Recipe       // for storing every recipe
 lateinit var recipeList: Recipe             // for RecyclerAdapter
 lateinit var masterMealPlanList: MealPlan   // for storing every meal
 lateinit var mealPlanList: Recipe           // for RecyclerMealPlan
-var mealPlanMode = BREAKFAST_CAT            // defaults to viewing breakfast
-var isMealMode = true                       // defaults to meals, not sides
+
 var assetsLoaded: Boolean = false
 
 @Serializable
@@ -51,11 +51,16 @@ data class MealPlan(var breakfast: MutableList<RecipeX>,
                     var lunch: MutableList<RecipeX>,
                     var dinner: MutableList<RecipeX>,
                     var startDate: Long)
-
+class MealPlanData {
+	var dateIterator = intArrayOf(0, 0, 0)
+	var mode = BREAKFAST_CAT            // defaults to viewing breakfast
+	var position: Int = 0
+	var isMealMode = true                       // defaults to meals, not sides
+}
 interface ActivityInterface {
-	fun updateRecyclerDate(date: Long)
-	fun updateRecyclerMP()
-	fun updateRecyclerRecipes()
+	fun updateRecyclerDate(smoothTransition: Boolean, date: Long)
+	fun updateRecyclerMP(smoothTransition: Boolean)
+	fun updateRecyclerRecipes(smoothTransition: Boolean)
 	fun fragmentTransaction(fragment: Fragment, tag: String)
 	fun saveDefaultPlan()
 }
@@ -65,35 +70,38 @@ interface RecyclerClickListener {
 interface RecyclerLongClickListener {
 	fun onLongClick(view: View, position: Int)
 }
-class MainActivity : AppCompatActivity(), ActivityInterface {
+var mealPlan = MealPlanData()
+class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuItemClickListener {
 	private lateinit var activityBinding: ActivityMainBinding
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
 		// load asset
 		if (!assetsLoaded) {
+			this.deleteFile(DEFAULT_PLAN_FILE)
+			this.deleteFile(DEFAULT_RECIPE_FILE)
 			var inputStream: InputStream =
-		//	try {
-		//		this.openFileInput(DEFAULT_RECIPE_FILE)
-		//	} catch (e: FileNotFoundException) {
+			try {
+				this.openFileInput(DEFAULT_RECIPE_FILE)
+			} catch (e: FileNotFoundException) {
 				this.resources.openRawResource(R.raw.savedrecipes)
-		//	}
+			}
 			var inputString = inputStream.bufferedReader().use { it.readText() }
 			masterRecipeList = Json.decodeFromString(inputString)
 			masterRecipeList.recipe.sortBy { it.toString() }
 
 			recipeList = Recipe(mutableListOf())
-			updateRecipeList(mealPlanMode)
+			updateRecipeList(mealPlan.mode)
 
 			inputStream =
-		//	try {
-		//		this.openFileInput(DEFAULT_PLAN_FILE)
-	//		} catch (e: FileNotFoundException) {
+			try {
+				this.openFileInput(DEFAULT_PLAN_FILE)
+			} catch (e: FileNotFoundException) {
 				this.resources.openRawResource(R.raw.defaultmealplan)
-	//		}
+			}
 			inputString = inputStream.bufferedReader().use { it.readText() }
 			masterMealPlanList = Json.decodeFromString(inputString)
 			mealPlanList = Recipe(mutableListOf())
-			when (mealPlanMode) {
+			when (mealPlan.mode) {
 				BREAKFAST_CAT -> mealPlanList.recipe.addAll(masterMealPlanList.breakfast)
 				LUNCH_CAT -> mealPlanList.recipe.addAll(masterMealPlanList.lunch)
 				else -> mealPlanList.recipe.addAll(masterMealPlanList.dinner)
@@ -104,33 +112,37 @@ class MainActivity : AppCompatActivity(), ActivityInterface {
 		// asset loaded
 		activityBinding = ActivityMainBinding.inflate(layoutInflater)
 		setContentView(activityBinding.root)
-		setSupportActionBar(findViewById(R.id.toolbar))
-
 		val binding = activityBinding.contentMain
+		setSupportActionBar(findViewById(R.id.toolbar))
 
 		window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN)
 		// hide the Android keyboard, unless TextInputEditText clicked/focused on
-		// set the RecyclerDate, set fixed size, for DEFAULT_NUM_DAYS
+		// set the RecyclerDate
 		binding.recyclerDate.layoutManager = LinearLayoutManager(this)
 		binding.recyclerDate.adapter = RecyclerAdapterDate()
-		binding.recyclerDate.setHasFixedSize(true)
 		// set up RecyclerMP
+
 		val mpClickListener = object : RecyclerClickListener {
 			override fun onClick(view: View, position: Int) {
-				if(mealPlanList.recipe[position].name != DEFAULT_EMPTY_RECIPE) {
-					fragmentTransaction(ViewMPRecipeFragment(position), "viewMPRecipe")
-				}
+				mealPlan.position = position
+
+				if (mealPlanList.recipe[position].isMeal && !mealPlan.isMealMode)
+					binding.tabsMS.getTabAt(0)!!.select()
+				else if (!mealPlanList.recipe[position].isMeal && mealPlan.isMealMode)
+					binding.tabsMS.getTabAt(1)!!.select()
+
+				showPopup(view, position)
 			}
 		}
 		binding.recyclerMP.layoutManager = LinearLayoutManager(this)
 		binding.recyclerMP.adapter = RecyclerAdapterMealPlan(mpClickListener, binding.recyclerMP)
-		binding.recyclerMP.setHasFixedSize(true)
 		val ithMP = setMPTouchHelper(binding.recyclerMP)    // it's called MPTouchHelper because
 		ithMP.attachToRecyclerView(binding.recyclerMP)      // it's specialized for the mealPlanList object
 		// set up RecyclerRecipes
 		val recClickListener = object : RecyclerClickListener {
 			override fun onClick(view: View, position: Int) {
-				fragmentTransaction(EditRecipeFragment(position, false), "savedRecipes")
+				fragmentTransaction(EditRecipeFragment(position, false,
+						false, true), "savedRecipes")
 			}
 		}
 		val recLongClickListener = object : RecyclerLongClickListener {
@@ -143,43 +155,52 @@ class MainActivity : AppCompatActivity(), ActivityInterface {
 		binding.recyclerRecipes.layoutManager = LinearLayoutManager(this)
 		binding.recyclerRecipes.adapter = RecyclerAdapterRecipes(recClickListener, recLongClickListener)
 
-		binding.tabsBLD.addOnTabSelectedListener( object : TabLayout.OnTabSelectedListener {
+		binding.tabsBLD.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
 			override fun onTabSelected(tab: TabLayout.Tab) {
 				if (tab.position == 0) {
-					mealPlanMode = BREAKFAST_CAT
+					mealPlan.mode = BREAKFAST_CAT
 					mealPlanList.recipe = masterMealPlanList.breakfast
 				} else if (tab.position == 1) {
-					mealPlanMode = LUNCH_CAT
+					mealPlan.mode = LUNCH_CAT
 					mealPlanList.recipe = masterMealPlanList.lunch
 				} else {
-					mealPlanMode = DINNER_CAT
+					mealPlan.mode = DINNER_CAT
 					mealPlanList.recipe = masterMealPlanList.dinner
 				}
-				updateRecipeList(mealPlanMode)
-				binding.recyclerMP.adapter!!.notifyDataSetChanged()
-				binding.recyclerRecipes.adapter!!.notifyDataSetChanged()
+
+				if (!mealPlan.isMealMode)
+					activityBinding.contentMain.tabsMS.getTabAt(0)!!.select()
+				else {  // so we don't call these twice for no reason
+					updateRecipeList(mealPlan.mode)
+					updateRecyclerRecipes(false)
+				}
+				updateRecyclerDate(false, masterMealPlanList.startDate)
+				updateRecyclerMP(false)
 			}
+
 			override fun onTabReselected(tab: TabLayout.Tab?) {
 				println("Tab reselected!")
 			}
+
 			override fun onTabUnselected(tab: TabLayout.Tab?) {
 				println("Tab unselected!")
 			}
 		})
-		binding.tabsMS.addOnTabSelectedListener( object : TabLayout.OnTabSelectedListener {
+		binding.tabsMS.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
 			override fun onTabSelected(tab: TabLayout.Tab) {
 				if (tab.position == 0)
-					isMealMode = true
+					mealPlan.isMealMode = true
 				else if (tab.position == 1)
-					isMealMode = false
+					mealPlan.isMealMode = false
 
-				binding.recyclerDate.adapter!!.notifyDataSetChanged()
-				binding.recyclerMP.adapter!!.notifyDataSetChanged()
-				binding.recyclerRecipes.adapter!!.notifyDataSetChanged()
+				updateRecipeList(mealPlan.mode)
+				updateRecyclerRecipes(false)
 			}
+
 			override fun onTabReselected(tab: TabLayout.Tab?) {
 				println("Tab reselected!")
 			}
+
 			override fun onTabUnselected(tab: TabLayout.Tab?) {
 				println("Tab unselected!")
 			}
@@ -191,7 +212,8 @@ class MainActivity : AppCompatActivity(), ActivityInterface {
 			true
 		}
 		R.id.action_random -> {
-			updateRecipeListRandom(mealPlanMode)
+			activityBinding.contentMain.tabsMS.getTabAt(0)!!.select()
+			randomizeMealPlan(mealPlan.mode)
 			true
 		}
 		R.id.action_list -> {
@@ -200,6 +222,12 @@ class MainActivity : AppCompatActivity(), ActivityInterface {
 		}
 		R.id.action_recipe_manager -> {
 			val intent = Intent(this, RecipeManagerActivity::class.java)
+			startActivityForResult(intent, 1)
+			true
+		}
+		R.id.home -> {
+			val intent = Intent(this, MainActivity::class.java)
+			intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
 			startActivity(intent)
 			true
 		}
@@ -214,11 +242,54 @@ class MainActivity : AppCompatActivity(), ActivityInterface {
 		inflater.inflate(R.menu.menu_main, menu)
 		return true
 	}
+	fun showPopup(v: View, pos: Int) {
+		PopupMenu(v.context, v).apply {
+			setOnMenuItemClickListener(this@MainActivity)
+			if (mealPlanList.recipe[pos].name != DEFAULT_EMPTY_RECIPE) {
+				menu.add(0, v.id, 0, v.context.getString(R.string.context_view_recipe))
+				if (mealPlanList.recipe[pos].isMeal)
+					menu.add(1, v.id, 1, v.context.getString(R.string.context_add_side))
+			}
+			if (recipeList.recipe.size > 1)
+				menu.add(2, v.id, 2, v.context.getString(R.string.context_randomize))
+
+			show()
+		}
+	}
+	override fun onMenuItemClick(item: MenuItem): Boolean {
+		return when (item.groupId) {
+			0 -> {
+				if (mealPlanList.recipe[mealPlan.position].name != DEFAULT_EMPTY_RECIPE) {
+					fragmentTransaction(ViewMPRecipeFragment(mealPlan.position), "viewMPRecipe")
+				}
+				true
+			}
+			1 -> {
+				if (item.title == getString(R.string.context_add_side))
+					addSideDish(mealPlan.position)
+				true
+			}
+			2 -> {
+				if (item.title == getString(R.string.context_randomize)) {
+					randomizeSingleMeal(mealPlan.mode, mealPlan.position)
+				}
+				true
+			}
+			else -> {
+				super.onContextItemSelected(item)
+			}
+		}
+	}
 	override fun onBackPressed() {
 		super.onBackPressed()
 		if (supportFragmentManager.backStackEntryCount > 0) {
 			supportFragmentManager.popBackStack()
 		}
+	}
+	override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+		super.onActivityResult(requestCode, resultCode, data)
+		updateRecipeList(mealPlan.mode)
+		updateRecyclerRecipes(false)
 	}
 	override fun fragmentTransaction(fragment: Fragment, tag: String) {
 		val fragmentManager = supportFragmentManager
@@ -233,15 +304,26 @@ class MainActivity : AppCompatActivity(), ActivityInterface {
 		}
 		transaction.commit()
 	}
-	override fun updateRecyclerDate(date: Long) {
+	override fun updateRecyclerDate(smoothTransition: Boolean, date: Long) {
+		mealPlan.dateIterator = intArrayOf(0, 0, 0)
+		println(mealPlan.dateIterator)
 		masterMealPlanList.startDate = date
-		activityBinding.contentMain.recyclerDate.adapter!!.notifyItemRangeChanged(0, DEFAULT_NUM_DAYS)
+		if (smoothTransition)
+			activityBinding.contentMain.recyclerDate.adapter!!.notifyItemRangeChanged(0, mealPlanList.recipe.size)
+		else
+			activityBinding.contentMain.recyclerDate.adapter!!.notifyDataSetChanged()
 	}
-	override fun updateRecyclerMP() {
-		activityBinding.contentMain.recyclerMP.adapter!!.notifyItemRangeChanged(0, DEFAULT_NUM_DAYS)
+	override fun updateRecyclerMP(smoothTransition: Boolean) {
+		if (smoothTransition)
+			activityBinding.contentMain.recyclerMP.adapter!!.notifyItemRangeChanged(0, mealPlanList.recipe.size)
+		else
+			activityBinding.contentMain.recyclerMP.adapter!!.notifyDataSetChanged()
 	}
-	override fun updateRecyclerRecipes() {
-		activityBinding.contentMain.recyclerRecipes.adapter!!.notifyDataSetChanged()
+	override fun updateRecyclerRecipes(smoothTransition: Boolean) {
+		if (smoothTransition)
+			activityBinding.contentMain.recyclerRecipes.adapter!!.notifyItemRangeChanged(0, mealPlanList.recipe.size)
+		else
+			activityBinding.contentMain.recyclerRecipes.adapter!!.notifyDataSetChanged()
 	}
 	override fun saveDefaultPlan() {
 		this.openFileOutput(DEFAULT_PLAN_FILE, Context.MODE_PRIVATE).use {
@@ -256,10 +338,13 @@ class MainActivity : AppCompatActivity(), ActivityInterface {
 				for (x in 0 until masterRecipeList.recipe.size) {
 					val cat = masterRecipeList.recipe[x].cat
 					if (cat == BREAKFAST_CAT ||
-							cat == BREAKFAST_CAT+LUNCH_CAT ||
-							cat == BREAKFAST_CAT+DINNER_CAT ||
-							cat == BREAKFAST_CAT+LUNCH_CAT+DINNER_CAT) {
-						recipeList.recipe.add(masterRecipeList.recipe[x])
+							cat == BREAKFAST_CAT + LUNCH_CAT ||
+							cat == BREAKFAST_CAT + DINNER_CAT ||
+							cat == BREAKFAST_CAT + LUNCH_CAT + DINNER_CAT) {
+						if (mealPlan.isMealMode && masterRecipeList.recipe[x].isMeal)
+							recipeList.recipe.add(masterRecipeList.recipe[x])
+						else if (!mealPlan.isMealMode && !masterRecipeList.recipe[x].isMeal)
+							recipeList.recipe.add(masterRecipeList.recipe[x])
 					}
 				}
 			}
@@ -267,43 +352,93 @@ class MainActivity : AppCompatActivity(), ActivityInterface {
 				for (x in 0 until masterRecipeList.recipe.size) {
 					val cat = masterRecipeList.recipe[x].cat
 					if (cat == LUNCH_CAT ||
-							cat == BREAKFAST_CAT+LUNCH_CAT ||
-							cat == LUNCH_CAT+DINNER_CAT ||
-							cat == LUNCH_CAT+BREAKFAST_CAT+DINNER_CAT) {
-						recipeList.recipe.add(masterRecipeList.recipe[x])
+							cat == BREAKFAST_CAT + LUNCH_CAT ||
+							cat == LUNCH_CAT + DINNER_CAT ||
+							cat == LUNCH_CAT + BREAKFAST_CAT + DINNER_CAT) {
+						if (mealPlan.isMealMode && masterRecipeList.recipe[x].isMeal)
+							recipeList.recipe.add(masterRecipeList.recipe[x])
+						else if (!mealPlan.isMealMode && !masterRecipeList.recipe[x].isMeal)
+							recipeList.recipe.add(masterRecipeList.recipe[x])
 					}
 				}
 			}
 			DINNER_CAT -> {
 				for (x in 0 until masterRecipeList.recipe.size) {
-					recipeList.recipe.add(masterRecipeList.recipe[x])
+					if (mealPlan.isMealMode && masterRecipeList.recipe[x].isMeal)
+						recipeList.recipe.add(masterRecipeList.recipe[x])
+					else if (!mealPlan.isMealMode && !masterRecipeList.recipe[x].isMeal)
+						recipeList.recipe.add(masterRecipeList.recipe[x])
 				}
 			}
 		}
 	}
-	private fun updateRecipeListRandom(mode: Int) {
-		if (mode != DINNER_CAT) {
-			for (x in 0 until mealPlanList.recipe.size) {
-				val random = (0 until recipeList.recipe.size).random()
-				mealPlanList.recipe[x].name = recipeList.recipe[random].name
-				mealPlanList.recipe[x].ingredients = recipeList.recipe[random].ingredients
+	private fun addSideDish(position: Int) {
+		if (mealPlan.mode == BREAKFAST_CAT) {
+			val addThis = RecipeX(DEFAULT_EMPTY_RECIPE, "", "", 1, false)
+			masterMealPlanList.breakfast.add(position + 1, addThis)
+			mealPlanList.recipe = masterMealPlanList.breakfast
+		} else if (mealPlan.mode == LUNCH_CAT) {
+			val addThis = RecipeX(DEFAULT_EMPTY_RECIPE, "", "", 2, false)
+			masterMealPlanList.lunch.add(position + 1, addThis)
+			mealPlanList.recipe = masterMealPlanList.lunch
+		} else {
+			val addThis = RecipeX(DEFAULT_EMPTY_RECIPE, "", "", 4, false)
+			masterMealPlanList.dinner.add(position + 1, addThis)
+			mealPlanList.recipe = masterMealPlanList.dinner
+		}
+
+		updateRecyclerMP(false)
+		updateRecyclerDate(false, masterMealPlanList.startDate)
+	}
+	private fun randomizeSingleMeal(mealMode: Int, pos: Int) {
+		var random = (0 until recipeList.recipe.size).random()
+		if (mealMode != DINNER_CAT) {
+			while (mealPlanList.recipe[pos].name == recipeList.recipe[random].name)
+				random = (0 until recipeList.recipe.size).random()
+		} else {
+			var cat = recipeList.recipe[random].cat
+			while (cat < DINNER_CAT ||
+					mealPlanList.recipe[pos].name == recipeList.recipe[random].name) {
+				random = (0 until recipeList.recipe.size).random()
+				cat = recipeList.recipe[random].cat
 			}
 		}
-		else
-		{
-			for (x in 0 until mealPlanList.recipe.size) {
-				var random = (0 until recipeList.recipe.size).random()
-				var cat = recipeList.recipe[random].cat
-				while (cat < DINNER_CAT) {
-					random = (0 until recipeList.recipe.size).random()
-					cat = recipeList.recipe[random].cat
+		mealPlanList.recipe[pos].name = recipeList.recipe[random].name
+		mealPlanList.recipe[pos].ingredients = recipeList.recipe[random].ingredients
+		mealPlanList.recipe[pos].instructions = recipeList.recipe[random].instructions
+		mealPlanList.recipe[pos].cat = recipeList.recipe[random].cat
+
+		updateRecyclerMP(true)
+	}
+	private fun randomizeMealPlan(mealMode: Int) {
+		val arraySize = mealPlanList.recipe.size
+		val shuffle = recipeList.copy()   // copying the list and
+		shuffle.recipe.shuffle()          // shuffling so it doesn't affect the original
+		var select = 0
+		if (mealMode == DINNER_CAT) {
+			var size = shuffle.recipe.size
+			var x = 0
+			while (x < size) {
+				if (shuffle.recipe[x].cat < DINNER_CAT) {
+					shuffle.recipe.removeAt(x)
+					size--
 				}
-				mealPlanList.recipe[x].name = recipeList.recipe[random].name
-				mealPlanList.recipe[x].ingredients = recipeList.recipe[random].ingredients
+				x++
 			}
-			activityBinding.contentMain.recyclerMP.adapter!!.notifyItemRangeChanged(0, DEFAULT_NUM_DAYS)
 		}
-		activityBinding.contentMain.recyclerMP.adapter!!.notifyItemRangeChanged(0, DEFAULT_NUM_DAYS)
+		for (x in 0 until arraySize) {
+			if (mealPlanList.recipe[x].isMeal) {
+				mealPlanList.recipe[x].name = recipeList.recipe[select].name
+				mealPlanList.recipe[x].ingredients = recipeList.recipe[select].ingredients
+				mealPlanList.recipe[x].instructions = recipeList.recipe[select].instructions
+				mealPlanList.recipe[x].cat = recipeList.recipe[select].cat
+
+				select++
+				if (select == shuffle.recipe.size)
+					select = 0
+			}
+		}
+		updateRecyclerMP(true)
 	}
 	override fun onDestroy() {
 		saveDefaultPlan()
@@ -382,7 +517,7 @@ class RecyclerAdapterDate() :
 	class ViewHolder(v: View) : RecyclerView.ViewHolder(v) {
 		val tvItem: TextView = v.findViewById(R.id.tvItem)
 	}
-	override fun getItemCount() = DEFAULT_NUM_DAYS
+	override fun getItemCount() = mealPlanList.recipe.size
 
 	override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
 		val inflatedView = LayoutInflater.from(parent.context).inflate(
@@ -393,17 +528,24 @@ class RecyclerAdapterDate() :
 		return ViewHolder(inflatedView)
 	}
 	override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-		val gc = GregorianCalendar()
-		val today = gc.get(Calendar.DATE)
-		gc.timeInMillis =  masterMealPlanList.startDate
-		gc.add(Calendar.DATE, position)
+		if (mealPlanList.recipe[position].isMeal) {
+			val gc = GregorianCalendar()
+			gc.timeInMillis = masterMealPlanList.startDate
 
-		if (gc.get(Calendar.DATE) == today) {
-			holder.tvItem.typeface = Typeface.DEFAULT_BOLD
+			if (mealPlan.mode == DINNER_CAT) {
+				gc.add(Calendar.DATE, mealPlan.dateIterator[2])
+				mealPlan.dateIterator[2]++
+			} else {
+				val x = mealPlan.mode - 1
+				gc.add(Calendar.DATE, mealPlan.dateIterator[x])
+				mealPlan.dateIterator[x]++
+			}
+
+			val df: DateFormat = SimpleDateFormat("MM/dd E")
+			holder.tvItem.text = df.format(gc.time)
 		}
-
-		val df: DateFormat = SimpleDateFormat("MM/dd E")
-		holder.tvItem.text = df.format(gc.time)
+		else
+			holder.tvItem.text = " "
 	}
 }
 fun setMPTouchHelper(recycler: RecyclerView): ItemTouchHelper {
@@ -436,10 +578,17 @@ fun setMPTouchHelper(recycler: RecyclerView): ItemTouchHelper {
 		}
 		override fun onSwiped(viewHolder: RecyclerView.ViewHolder, swipeDir: Int) {
 			val pos = viewHolder.adapterPosition
-			mealPlanList.recipe[pos].name = DEFAULT_EMPTY_RECIPE
-			mealPlanList.recipe[pos].ingredients = "  "
+			if (mealPlanList.recipe[pos].isMeal) {
+				mealPlanList.recipe[pos].name = DEFAULT_EMPTY_RECIPE
+				mealPlanList.recipe[pos].ingredients = " "
+				mealPlanList.recipe[pos].instructions = " "
+				mealPlanList.recipe[pos].cat = mealPlan.mode
 
-			recycler.adapter!!.notifyItemChanged(viewHolder.adapterPosition)
+				recycler.adapter!!.notifyItemChanged(viewHolder.adapterPosition)
+			} else {
+				mealPlanList.recipe.removeAt(pos)
+				recycler.adapter!!.notifyItemRemoved(viewHolder.adapterPosition)
+			}
 		}
 	}
 	return ItemTouchHelper(itemTouchCallback)
@@ -477,6 +626,8 @@ private class SetDragListener(val posOfView: Int, val recycler: RecyclerView) : 
 				val pos = posOfView
 				mealPlanList.recipe[pos].name = recipeList.recipe[posOfDragged].name
 				mealPlanList.recipe[pos].ingredients = recipeList.recipe[posOfDragged].ingredients
+				mealPlanList.recipe[pos].instructions = recipeList.recipe[posOfDragged].instructions
+				mealPlanList.recipe[pos].cat = recipeList.recipe[posOfDragged].cat
 				recycler.adapter!!.notifyItemChanged(posOfView)
 				return true
 			}
@@ -492,7 +643,6 @@ private class SetDragListener(val posOfView: Int, val recycler: RecyclerView) : 
 	}
 }
 
-// TODO: When clicking or something, or maybe a new context menu, add sides to meals
 // TODO: Upload recipe from a website -- website parser or Copy/paste parser
 // TODO: cup(s) ounce(s) tablespoon(s) teaspoon(s)
-// TODO: Save shopping list, only 1 no duplicates. shoppingList
+// TODO: Save shopping list, only 1 no duplicates. shoppingList.json

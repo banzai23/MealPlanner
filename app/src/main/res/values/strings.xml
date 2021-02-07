@@ -34,7 +34,15 @@
     <string name="menu_random">Random</string>
     <string name="menu_list">Shopping List</string>
     <string name="menu_rm">Recipe Manager</string>
+
+    <!-- context menu strings -->
+    <string name="context_view_recipe">View Recipe</string>
+    <string name="context_add_side">Add Side Dish</string>
+    <string name="context_randomize">Pick New Random Recipe</string>
     <!-- warning strings -->
     <string name="warn_noCat">"Must save under at least 1 meal category\\nBreakfast, Lunch, or Dinner"</string>
+    <!-- dialog strings -->
+    <string name="dialog_change_title">Input title for recipe:</string>
+    <string name="dialog_ok">OK</string>
 
 </resources>

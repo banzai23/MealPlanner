@@ -1,35 +1,68 @@
 package com.example.mealplanner
 
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.Context
+import android.content.DialogInterface
 import android.os.Bundle
 import android.view.View
 import android.view.inputmethod.InputMethodManager
+import android.widget.EditText
 import androidx.fragment.app.Fragment
 import com.example.mealplanner.databinding.FragmentEditRecipesBinding
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import java.util.*
 
-class EditRecipeFragment(position: Int, editMaster: Boolean): Fragment(R.layout.fragment_edit_recipes) {
+class EditRecipeFragment(position: Int,
+                         editMaster: Boolean,
+                         editNewRecipe: Boolean,
+						 launchedFromMainActivity: Boolean): Fragment(R.layout.fragment_edit_recipes) {
 	private var _binding: FragmentEditRecipesBinding? = null
-	private val pos = position  // this allows access to position in the following functions
+	private var pos = position  // this allows access to position in the following functions
 	private val master = editMaster
+	private val newRecipe = editNewRecipe
+	private val fromMainActivity = launchedFromMainActivity
+	private lateinit var updateRec: RecipeActivityInterface
+
 	override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 		super.onViewCreated(view, savedInstanceState)
 		val binding = FragmentEditRecipesBinding.bind(view)
-		var cat: Int
 		_binding = binding
+		if (!fromMainActivity)
+			updateRec = context as RecipeActivityInterface
+		var cat: Int
 
+		if (newRecipe) {
+			val addThis = RecipeX("", "", "", 0, true)
+			masterRecipeList.recipe.add(addThis)
+			pos = masterRecipeList.recipe.size - 1 // the position is the new size - 1
+
+			// TITLE DIALOG
+			val builder = AlertDialog.Builder(context)
+			val editText = EditText(context)
+			builder.setMessage(R.string.dialog_change_title)
+			builder.setView(editText)
+					.setPositiveButton(R.string.dialog_ok,
+							DialogInterface.OnClickListener { dialog, _ ->
+								onDialogPositiveClick(dialog, editText.text.toString())
+							})
+					.setNegativeButton(R.string.str_cancel,
+							DialogInterface.OnClickListener { dialog, _ ->
+								onDialogNegativeClick(dialog)
+							})
+			builder.create()
+			builder.show()
+		}
 		val editList: Recipe =
 		if (master)
 			masterRecipeList
 		else
 			recipeList
-
+		binding.tvRecipe.text = editList.recipe[pos].name
 		binding.etRecipe.setText(editList.recipe[pos].ingredients)
 		binding.etInstructions.setText(editList.recipe[pos].instructions)
-		binding.tvRecipe.text = editList.recipe[pos].name
 		cat = editList.recipe[pos].cat
 
 		// START Checkbox check for checks
@@ -80,10 +113,13 @@ class EditRecipeFragment(position: Int, editMaster: Boolean): Fragment(R.layout.
 		if (!editList.recipe[pos].isMeal)
 			binding.rbSide.isChecked = true
 
-		binding.rbMealOrSide.setOnClickListener {
-			editList.recipe[pos].isMeal = binding.rbMeal.isChecked
+		binding.rbMeal.setOnClickListener {
+			editList.recipe[pos].isMeal = true
 		}
-		// END Click listeners for Checkboxes
+		binding.rbSide.setOnClickListener {
+			editList.recipe[pos].isMeal = false
+		}
+		// END Click listeners for Checkboxes and Radio Buttons
 		binding.btnCancel.setOnClickListener {
 			exitEditRecipes()    // feed the category back to either the master or recipe for update
 		}
@@ -93,32 +129,42 @@ class EditRecipeFragment(position: Int, editMaster: Boolean): Fragment(R.layout.
 					masterRecipeList.recipe[pos].cat = cat
 					masterRecipeList.recipe[pos].ingredients = binding.etRecipe.text.toString()
 					masterRecipeList.recipe[pos].instructions = binding.etInstructions.text.toString()
-					requireContext().openFileOutput(DEFAULT_RECIPE_FILE, Context.MODE_PRIVATE).use {
-						val jsonToFile = Json.encodeToString(masterRecipeList)
-						it.write(jsonToFile.toByteArray())
-					}
 				} else {
 					recipeList.recipe[pos].cat = cat
 					recipeList.recipe[pos].ingredients = binding.etRecipe.text.toString()
 					recipeList.recipe[pos].instructions = binding.etInstructions.text.toString()
-					requireContext().openFileOutput(DEFAULT_RECIPE_FILE, Context.MODE_PRIVATE).use {
-						val jsonToFile = Json.encodeToString(masterRecipeList)
-						// even though recipeList was update, we still always
-						// save the master because that has every recipe
-						it.write(jsonToFile.toByteArray())
-					}
+				}
+				masterRecipeList.recipe.sortBy { it.toString() }
+				requireContext().openFileOutput(DEFAULT_RECIPE_FILE, Context.MODE_PRIVATE).use {
+					val jsonToFile = Json.encodeToString(masterRecipeList)
+					// even though recipeList may have been updated, we still always
+					// save the master because that has every recipe from recipeList
+					it.write(jsonToFile.toByteArray())
 				}
 				exitEditRecipes() // feed the category back to either the master or recipe for update
 			}
 			else {
-				Snackbar.make(binding.cb1, getString(R.string.warn_noCat), 5)
+				Snackbar.make(binding.cb1, getString(R.string.warn_noCat), 5000)
 			}
 		}
+	}
+	private fun onDialogPositiveClick(dialog: DialogInterface, title: String) {
+		val str: String = title.capitalize(Locale.ENGLISH)
+		masterRecipeList.recipe[pos].name = str
+		println("RIGHT HERE NOW!")
+		println(masterRecipeList.recipe[pos].name)
+		println(pos)
+		dialog.dismiss()
+	}
+	private fun onDialogNegativeClick(dialog: DialogInterface) {
+		dialog.cancel()
+		exitEditRecipes()
 	}
 	private fun exitEditRecipes() {
 		val imm: InputMethodManager = requireContext().getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
 		imm.hideSoftInputFromWindow(requireView().windowToken, 0)
-
+		if (!fromMainActivity)
+			updateRec.updateRecycler()
 		requireActivity().supportFragmentManager.popBackStack()
 	}
 	override fun onDestroyView() {

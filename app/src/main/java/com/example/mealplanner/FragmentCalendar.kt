@@ -42,7 +42,7 @@ class CalendarFragment : Fragment(R.layout.fragment_calendar) {
 			gc.timeInMillis = binding.calendarView.date
 			// roll back to Sunday
 			while (gc.get(Calendar.DAY_OF_WEEK) != 1)
-				gc.roll(GregorianCalendar.DATE, false)
+				gc.roll(GregorianCalendar.DAY_OF_YEAR, false)
 			//
 			val selectedDateToSunday = gc.timeInMillis
 			filename = gc.get(Calendar.WEEK_OF_YEAR).toString() // setting filename to week# of year
@@ -52,27 +52,29 @@ class CalendarFragment : Fragment(R.layout.fragment_calendar) {
 					val inputString = inputStream.bufferedReader().use { it.readText() }
 					masterMealPlanList = Json.decodeFromString(inputString)
 				} catch (e: FileNotFoundException) {
+					masterMealPlanList.breakfast.clear()
+					masterMealPlanList.lunch.clear()
+					masterMealPlanList.dinner.clear()
 					for (x in 0 until 7) {
-						masterMealPlanList.breakfast[x].name = DEFAULT_EMPTY_RECIPE
-					}
-					for (x in 7 until 14) {
-						masterMealPlanList.lunch[x].name = DEFAULT_EMPTY_RECIPE
-					}
-					for (x in 14 until 21) {
-						masterMealPlanList.dinner[x].name = DEFAULT_EMPTY_RECIPE
+						val addBreak = RecipeX(DEFAULT_EMPTY_RECIPE, "", "", 1, true)
+						masterMealPlanList.breakfast.add(x, addBreak)
+						val addLunch = RecipeX(DEFAULT_EMPTY_RECIPE, "", "", 2, true)
+						masterMealPlanList.lunch.add(x, addLunch)
+						val addDinner = RecipeX(DEFAULT_EMPTY_RECIPE, "", "", 4, true)
+						masterMealPlanList.dinner.add(x, addDinner)
 					}
 				}
 
-			if (mealPlanMode == BREAKFAST_CAT)
+			if (mealPlan.mode == BREAKFAST_CAT)
 				mealPlanList.recipe = masterMealPlanList.breakfast
-			else if (mealPlanMode == LUNCH_CAT)
+			else if (mealPlan.mode == LUNCH_CAT)
 				mealPlanList.recipe = masterMealPlanList.lunch
 			else
 				mealPlanList.recipe = masterMealPlanList.dinner
 
 			// done loading, now update recyclers
-			updateAct.updateRecyclerDate(selectedDateToSunday)
-			updateAct.updateRecyclerMP()
+			updateAct.updateRecyclerDate(false, selectedDateToSunday)
+			updateAct.updateRecyclerMP(false)
 
 			val actInt: ActivityInterface = context as ActivityInterface
 			actInt.saveDefaultPlan()
@@ -81,8 +83,10 @@ class CalendarFragment : Fragment(R.layout.fragment_calendar) {
 		/*
 		binding.btnSelectDate.setOnClickListener {
 			gc.timeInMillis = binding.calendarView.date
-			val filename = gc.get(Calendar.WEEK_OF_YEAR).toString()
+			val filename: String = gc.get(Calendar.WEEK_OF_YEAR).toString()
 			requireContext().deleteFile(filename)
+		//	requireContext().deleteFile(DEFAULT_PLAN_FILE)
+		//	requireContext().deleteFile(DEFAULT_RECIPE_FILE)
 		} */
 		binding.btnCancelCal.setOnClickListener {
 			requireActivity().supportFragmentManager.popBackStack()
