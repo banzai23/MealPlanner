@@ -30,31 +30,23 @@
             android:id="@+id/action_calendarFragment_to_mainActivity"
             app:destination="@id/mainActivity" />
     </fragment>
-    <fragment
-        android:id="@+id/viewMPRecipeFragment"
-        android:name="com.example.mealplanner.ViewMPRecipeFragment"
-        android:label="fragment_blank_view"
-        tools:layout="@layout/fragment_blank_view" >
-        <action
-            android:id="@+id/action_viewMPRecipeFragment_to_mainActivity"
-            app:destination="@id/mainActivity" />
-    </fragment>
-    <fragment
-        android:id="@+id/shoppingListFragment"
-        android:name="com.example.mealplanner.ShoppingListFragment"
-        android:label="fragment_shopping_list"
-        tools:layout="@layout/fragment_shopping_list" >
-        <action
-            android:id="@+id/action_shoppingListFragment_to_mainActivity"
-            app:destination="@id/mainActivity" />
-    </fragment>
     <activity
         android:id="@+id/recipeManagerActivity"
         android:name="com.example.mealplanner.RecipeManagerActivity"
         android:label="recipe_manager_activity"
-        tools:layout="@layout/recipe_manager_activity" >
+        tools:layout="@layout/activity_recipe_manager" />
+    <activity
+        android:id="@+id/shoppingListActivity"
+        android:name="com.example.mealplanner.ShoppingListActivity"
+        android:label="activity_shopping_list"
+        tools:layout="@layout/activity_shopping_list" />
+    <fragment
+        android:id="@+id/viewRecipesFragment"
+        android:name="com.example.mealplanner.ViewRecipesFragment"
+        android:label="fragment_blank_view"
+        tools:layout="@layout/fragment_blank_view" >
         <action
-            android:id="@+id/action_recipeManagerActivity_to_mainActivity"
+            android:id="@+id/action_viewRecipesFragment_to_mainActivity"
             app:destination="@id/mainActivity" />
-    </activity>
+    </fragment>
 </navigation>

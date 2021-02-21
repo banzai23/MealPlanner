@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".ShoppingListActivity">
+    <item
+        android:id="@+id/action_item"
+        android:title="@string/menu_item"
+        android:orderInCategory="1"
+        app:showAsAction="always"
+        tools:ignore="AlwaysShowAction" />
+    <item
+        android:id="@+id/action_save"
+        android:title="@string/menu_save"
+        android:orderInCategory="2"
+        app:showAsAction="always"/>
+    <item
+        android:id="@+id/action_load"
+        android:title="@string/menu_load"
+        android:orderInCategory="3"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/action_generate"
+        android:title="@string/menu_generate"
+        android:orderInCategory="4"
+        app:showAsAction="never"/>
+</menu>

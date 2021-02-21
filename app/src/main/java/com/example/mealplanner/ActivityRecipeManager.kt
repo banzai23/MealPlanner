@@ -1,25 +1,27 @@
 package com.example.mealplanner
 
+import android.app.AlertDialog
+import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.Button
+import android.widget.EditText
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.mealplanner.databinding.RecipeManagerActivityBinding
+import com.example.mealplanner.databinding.ActivityRecipeManagerBinding
+import java.util.*
 
 interface RecipeActivityInterface {
 	fun updateRecycler()
 }
 class RecipeManagerActivity : AppCompatActivity(), RecipeActivityInterface {
-	private var _binding: RecipeManagerActivityBinding? = null
+	private var _binding: ActivityRecipeManagerBinding? = null
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
-		val binding: RecipeManagerActivityBinding = RecipeManagerActivityBinding.inflate(layoutInflater)
+		val binding: ActivityRecipeManagerBinding = ActivityRecipeManagerBinding.inflate(layoutInflater)
 		_binding = binding
 		setContentView(binding.root)
 		setSupportActionBar(findViewById(R.id.toolbar))
@@ -40,32 +42,105 @@ class RecipeManagerActivity : AppCompatActivity(), RecipeActivityInterface {
 					val transaction = fragmentManager.beginTransaction()
 					transaction.replace(
 							R.id.rm_root,
-							EditRecipeFragment(position, true, false, false),
+							EditRecipeFragment(position, true, false,
+									false,  ""),
 							"editRecipe"
 					)
 					transaction.addToBackStack(null)
 					transaction.commit()
 				}
 				else if (view.id == R.id.btn_Delete) {
-					masterRecipeList.recipe.removeAt(position)
-					binding.recyclerRM.adapter!!.notifyItemRemoved(position)
+					val builder = AlertDialog.Builder(this@RecipeManagerActivity)
+					val dialogString = getString(R.string.dialog_delete_recipe)+" \""+masterRecipeList.recipe[position].name+"\"?"
+					builder.setMessage(dialogString)
+					builder.setPositiveButton(R.string.dialog_yes
+					) { dialog, _ ->
+						masterRecipeList.recipe.removeAt(position)
+						binding.recyclerRM.adapter!!.notifyItemRemoved(position)
+						dialog.dismiss()
+					}
+					.setNegativeButton(R.string.dialog_no
+					) { dialog, _ ->
+						dialog.dismiss()
+					}
+					builder.create()
+					builder.show()
 				}
 			}
 		}
 		binding.recyclerRM.layoutManager = LinearLayoutManager(this)
 		binding.recyclerRM.adapter = RecyclerAdapterRecipeManager(rmClickListener)
+	}
+	override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
+		R.id.action_new_recipe -> {
+			openDialog(false)
+			true
+		}
+		R.id.action_new_recipe_internet -> {
+			openDialog(true)
+			true
+		}
+		else -> {
+			super.onOptionsItemSelected(item)
+		}
+	}
+	override fun onCreateOptionsMenu(menu: Menu): Boolean {
+		val inflater: MenuInflater = menuInflater
+		inflater.inflate(R.menu.menu_recipe_manager, menu)
+		return true
+	}
+	private fun openDialog(addInternet: Boolean) {
+		val builder = AlertDialog.Builder(this)
+		val editText = EditText(this)
+		if (addInternet)
+			builder.setMessage(R.string.dialog_website_url)
+		else
+			builder.setMessage(R.string.dialog_change_title)
+		builder.setView(editText)
+			.setPositiveButton(R.string.dialog_ok
+			) { dialog, _ ->
+				onDialogPositiveClick(dialog, addInternet, editText.text.toString())
+			}
+			.setNegativeButton(R.string.str_cancel
+			) { dialog, _ ->
+				onDialogNegativeClick(dialog)
+			}
+		builder.create()
+		builder.show()
+	}
+	private fun onDialogPositiveClick(dialog: DialogInterface, parseWebsite: Boolean, urlOrTitle: String) {
+		dialog.dismiss()
 
-		binding.btnAddNew.setOnClickListener {
-			val fragmentManager = supportFragmentManager
-			val transaction = fragmentManager.beginTransaction()
+		val addThis =
+			if (!parseWebsite)
+				RecipeX(urlOrTitle.capitalize(Locale.ENGLISH), "", "", 0, true)
+			else
+				RecipeX("", "", "", 0, true)
+		masterRecipeList.recipe.add(addThis)
+		val pos = masterRecipeList.recipe.size - 1 // the position is the new size - 1
+
+		val fragmentManager = supportFragmentManager
+		val transaction = fragmentManager.beginTransaction()
+		if (parseWebsite) {
 			transaction.replace(
 					R.id.rm_root,
-					EditRecipeFragment(1001, true, true, false),
+					EditRecipeFragment(pos, true,
+							false, parseWebsite, urlOrTitle),
 					"editRecipe"
 			)
-			transaction.addToBackStack(null)
-			transaction.commit()
+		} else {
+			transaction.replace(
+					R.id.rm_root,
+					EditRecipeFragment(pos, true,
+							false, parseWebsite, ""),
+					"editRecipe"
+			)
 		}
+		transaction.addToBackStack(null)
+		transaction.commit()
+	}
+	private fun onDialogNegativeClick(dialog: DialogInterface) {
+		dialog.cancel()
 	}
 	override fun updateRecycler() {
 		_binding!!.recyclerRM.adapter!!.notifyDataSetChanged()

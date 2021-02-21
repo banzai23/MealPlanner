@@ -28,24 +28,25 @@ class CalendarFragment : Fragment(R.layout.fragment_calendar) {
 		val gc = GregorianCalendar()
 		gc.timeInMillis = binding.calendarView.date
 		gc.set(Calendar.DAY_OF_YEAR, 1)
+		gc.roll(Calendar.YEAR, false)
 		binding.calendarView.minDate = gc.timeInMillis
 
 		binding.btnSelectDate.setOnClickListener {
 			// save what we were looking at before on the MealPlanAdapter
 			gc.timeInMillis = masterMealPlanList.startDate
-			var filename: String = gc.get(Calendar.WEEK_OF_YEAR).toString()
+			var filename: String = gc.get(Calendar.WEEK_OF_YEAR).toString()+"_"+gc.get(Calendar.YEAR).toString()
 			requireContext().openFileOutput(filename, Context.MODE_PRIVATE).use {
 				val jsonToFile = Json.encodeToString(masterMealPlanList)
 				it.write(jsonToFile.toByteArray())
 			}
 			// done saving, now load
 			gc.timeInMillis = binding.calendarView.date
-			// roll back to Sunday
+			// roll back to Sunday, startDate is always saved as the first date of the week
 			while (gc.get(Calendar.DAY_OF_WEEK) != 1)
 				gc.roll(GregorianCalendar.DAY_OF_YEAR, false)
 			//
 			val selectedDateToSunday = gc.timeInMillis
-			filename = gc.get(Calendar.WEEK_OF_YEAR).toString() // setting filename to week# of year
+			filename = gc.get(Calendar.WEEK_OF_YEAR).toString()+"_"+gc.get(Calendar.YEAR).toString() // setting filename to week# of year + year
 			val inputStream: InputStream
 			try {
 					inputStream = requireContext().openFileInput(filename)
@@ -76,17 +77,14 @@ class CalendarFragment : Fragment(R.layout.fragment_calendar) {
 			updateAct.updateRecyclerDate(false, selectedDateToSunday)
 			updateAct.updateRecyclerMP(false)
 
-			val actInt: ActivityInterface = context as ActivityInterface
-			actInt.saveDefaultPlan()
+			updateAct.saveDefaultFiles()
 			requireActivity().supportFragmentManager.popBackStack()
 		}
-		/*
+		/*  // For development; deletes old weekly meal plan files
 		binding.btnSelectDate.setOnClickListener {
 			gc.timeInMillis = binding.calendarView.date
 			val filename: String = gc.get(Calendar.WEEK_OF_YEAR).toString()
 			requireContext().deleteFile(filename)
-		//	requireContext().deleteFile(DEFAULT_PLAN_FILE)
-		//	requireContext().deleteFile(DEFAULT_RECIPE_FILE)
 		} */
 		binding.btnCancelCal.setOnClickListener {
 			requireActivity().supportFragmentManager.popBackStack()

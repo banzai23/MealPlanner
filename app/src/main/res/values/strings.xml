@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">MealPlanner</string>
-    <string name="rm_name">RecipeManager</string>
+    <string name="rm_name">Recipes</string>
+    <string name="sl_name">List</string>
 
     <string name="str_meal1">Breakfast</string>
     <string name="str_meal2">Lunch</string>
@@ -11,6 +12,7 @@
     <string name="str_sides">Sides</string>
     <string name="str_side">Side Dish</string>
     <string name="str_add_new">Add New</string>
+    <string name="str_add_internet">Add From Website</string>
     <string name="str_new">New</string>
     <string name="str_randomize">Random</string>
     <string name="str_discard">Discard</string>
@@ -18,11 +20,9 @@
     <string name="str_cancel">Cancel</string>
     <string name="str_save">Save</string>
     <string name="str_load">Load</string>
-    <string name="str_sre_title">Recipe</string>
     <string name="str_select">Select</string>
     <string name="str_back">Back</string>
-    <string name="str_recipe_title">Recipes:</string>
-    <string name="str_recipe_ing_hint">Recipe Ingredients</string>
+    <string name="str_recipe_ing_hint">Ingredients</string>
     <string name="str_recipe_instr_hint">Instructions</string>
     <string name="str_shopping_list">Shopping List</string>
     <string name="str_delete">Delete</string>
@@ -34,15 +34,32 @@
     <string name="menu_random">Random</string>
     <string name="menu_list">Shopping List</string>
     <string name="menu_rm">Recipe Manager</string>
+    <string name="menu_exit">Exit</string>
+    <string name="menu_save">Save</string>
+    <string name="menu_load">Load</string>
+    <string name="menu_item">+Item</string>
+    <string name="menu_new_recipe">Add Recipe</string>
+    <string name="menu_new_recipe_internet">Add recipe from website</string>
+    <string name="menu_generate">Generate shopping list from meal plan</string>
 
     <!-- context menu strings -->
     <string name="context_view_recipe">View Recipe</string>
     <string name="context_add_side">Add Side Dish</string>
     <string name="context_randomize">Pick New Random Recipe</string>
     <!-- warning strings -->
-    <string name="warn_noCat">"Must save under at least 1 meal category\\nBreakfast, Lunch, or Dinner"</string>
+    <string name="warn_noCat">"Must save under at least 1 meal category:\nBreakfast, Lunch, or Dinner"</string>
     <!-- dialog strings -->
     <string name="dialog_change_title">Input title for recipe:</string>
+    <string name="dialog_website_url">Input website address for recipe:</string>
     <string name="dialog_ok">OK</string>
+    <string name="dialog_yes">Yes</string>
+    <string name="dialog_no">No</string>
+    <string name="dialog_add_item">Add item to shopping list:</string>
+    <string name="dialog_delete_recipe">Are you sure you want to delete recipe</string>
+    <string name="dialog_exit">Are you sure you want to exit?</string>
+    <!-- snackbar strings -->
+    <string name="snackbar_sl_load">Shopping list loaded!</string>
+    <string name="snackbar_sl_save">Shopping list saved!</string>
+    <string name="snackbar_sl_generate">Shopping list generated from meal plan!</string>
 
 </resources>

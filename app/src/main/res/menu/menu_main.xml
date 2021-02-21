@@ -24,5 +24,9 @@
         android:title="@string/menu_rm"
         android:orderInCategory="4"
         app:showAsAction="ifRoom"/>
-
+    <item
+        android:id="@+id/action_exit"
+        android:title="@string/menu_exit"
+        android:orderInCategory="5"
+        app:showAsAction="never" />
 </menu>
