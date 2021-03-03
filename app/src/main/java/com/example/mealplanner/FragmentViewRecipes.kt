@@ -3,14 +3,14 @@ package com.example.mealplanner
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.Fragment
-import com.example.mealplanner.databinding.FragmentBlankViewBinding
+import com.example.mealplanner.databinding.FragmentViewRecipesBinding
 
-class ViewRecipesFragment(position: Int): Fragment(R.layout.fragment_blank_view) {
-	private var _binding: FragmentBlankViewBinding? = null
+class ViewRecipesFragment(position: Int): Fragment(R.layout.fragment_view_recipes) {
+	private var _binding: FragmentViewRecipesBinding? = null
 	private val pos = position
 	override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 		super.onViewCreated(view, savedInstanceState)
-		val binding = FragmentBlankViewBinding.bind(view)
+		val binding = FragmentViewRecipesBinding.bind(view)
 		_binding = binding
 
 		binding.tvName.text = mealPlanList.recipe[pos].name

@@ -14,14 +14,11 @@ import kotlinx.serialization.json.Json
 class EditRecipeFragment(position: Int,
                          editMaster: Boolean,
 						 launchedFromMainActivity: Boolean,
-						 parseWebsite: Boolean,
-						 siteURL: String): Fragment(R.layout.fragment_edit_recipes) {
+						 val preAddedNew: Boolean): Fragment(R.layout.fragment_edit_recipes) {
 	private var _binding: FragmentEditRecipesBinding? = null
 	private var pos = position
 	private val master = editMaster
 	private val fromMainActivity = launchedFromMainActivity
-	private val parseInternet = parseWebsite
-	private val url = siteURL
 
 	private lateinit var updateRec: RecipeActivityInterface
 
@@ -36,10 +33,6 @@ class EditRecipeFragment(position: Int,
 				masterRecipeList
 			else
 				recipeList
-
-		if (parseInternet) {
-			masterRecipeList.recipe[pos] = getRecipeFromHTML(url)   // code in ParseInternetRecipe.kt
-		}
 
 		binding.tvRecipe.text = editList.recipe[pos].name
 		binding.etRecipe.setText(editList.recipe[pos].ingredients)
@@ -102,6 +95,8 @@ class EditRecipeFragment(position: Int,
 		}
 		// END Click listeners for Checkboxes and Radio Buttons
 		binding.btnCancel.setOnClickListener {
+			if (preAddedNew)    // if it was added new, but we're canceling, we need to delete
+				masterRecipeList.recipe.removeLast()
 			exitEditRecipes()
 		}
 		binding.btnSave.setOnClickListener {

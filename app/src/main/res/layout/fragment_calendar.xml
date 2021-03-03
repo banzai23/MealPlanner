@@ -20,7 +20,7 @@
 
     <CalendarView
         android:id="@+id/calendarView"
-        android:layout_width="362dp"
+        android:layout_width="match_parent"
         android:layout_height="339dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

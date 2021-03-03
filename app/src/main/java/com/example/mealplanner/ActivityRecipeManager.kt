@@ -42,8 +42,7 @@ class RecipeManagerActivity : AppCompatActivity(), RecipeActivityInterface {
 					val transaction = fragmentManager.beginTransaction()
 					transaction.replace(
 							R.id.rm_root,
-							EditRecipeFragment(position, true, false,
-									false,  ""),
+							EditRecipeFragment(position, true, false, false),
 							"editRecipe"
 					)
 					transaction.addToBackStack(null)
@@ -108,8 +107,35 @@ class RecipeManagerActivity : AppCompatActivity(), RecipeActivityInterface {
 		builder.create()
 		builder.show()
 	}
+	private fun showErrorDialog(errorCode: Int) {
+		val builder = AlertDialog.Builder(this)
+		if (errorCode == 1)
+			builder.setMessage(R.string.dialog_recipe_internet_error1)
+		else if (errorCode == 2)
+			builder.setMessage(R.string.dialog_recipe_internet_error2)
+		else
+			builder.setMessage(R.string.dialog_recipe_internet_error)
+
+		builder.setPositiveButton(R.string.dialog_ok
+		) { dialog, _ ->
+			dialog.dismiss()
+		}
+		builder.create()
+		builder.show()
+	}
 	private fun onDialogPositiveClick(dialog: DialogInterface, parseWebsite: Boolean, urlOrTitle: String) {
-		dialog.dismiss()
+		fun loadEditRecipe(pos: Int) {
+			val fragmentManager = supportFragmentManager
+			val transaction = fragmentManager.beginTransaction()
+			transaction.replace(
+					R.id.rm_root,
+					EditRecipeFragment(pos, true,
+							false, true),
+					"editRecipe"
+			)
+			transaction.addToBackStack(null)
+			transaction.commit()
+		}
 
 		val addThis =
 			if (!parseWebsite)
@@ -118,26 +144,22 @@ class RecipeManagerActivity : AppCompatActivity(), RecipeActivityInterface {
 				RecipeX("", "", "", 0, true)
 		masterRecipeList.recipe.add(addThis)
 		val pos = masterRecipeList.recipe.size - 1 // the position is the new size - 1
-
-		val fragmentManager = supportFragmentManager
-		val transaction = fragmentManager.beginTransaction()
+		// TODO: Add loading dialog
 		if (parseWebsite) {
-			transaction.replace(
-					R.id.rm_root,
-					EditRecipeFragment(pos, true,
-							false, parseWebsite, urlOrTitle),
-					"editRecipe"
-			)
+			val returnCode = getRecipeFromHTML(urlOrTitle, pos)
+			if (returnCode != 0) {
+				dialog.dismiss()
+				masterRecipeList.recipe.removeLast()
+				showErrorDialog(returnCode)
+			}
+			else {
+				dialog.dismiss()
+				loadEditRecipe(pos)
+			}
 		} else {
-			transaction.replace(
-					R.id.rm_root,
-					EditRecipeFragment(pos, true,
-							false, parseWebsite, ""),
-					"editRecipe"
-			)
+			dialog.dismiss()
+			loadEditRecipe(pos)
 		}
-		transaction.addToBackStack(null)
-		transaction.commit()
 	}
 	private fun onDialogNegativeClick(dialog: DialogInterface) {
 		dialog.cancel()

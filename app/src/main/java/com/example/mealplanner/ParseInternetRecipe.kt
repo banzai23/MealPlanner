@@ -1,41 +1,105 @@
 package com.example.mealplanner
 
 import java.io.BufferedReader
+import java.io.IOException
 import java.io.InputStream
 import java.io.InputStreamReader
+import java.net.MalformedURLException
 import java.net.URL
-import java.net.URLConnection
+import java.net.UnknownHostException
+import javax.net.ssl.HttpsURLConnection
+import javax.net.ssl.SSLContext
 
 const val ALLRECIPES_URL = "allrecipes.com"
 const val ALLRECIPES_NAME = "<meta property=\"og:title\" content=\""
 const val ALLRECIPES_ING = "\"recipeIngredient\""
+const val ALLRECIPES_ING_END = "],"
 const val ALLRECIPES_INS = "\"recipeInstructions\""
 const val ALLRECIPES_INS2 = "\"text\": \""
 
-const val SITE_NAME = "og:title"
-const val SITE_ING = ""
-const val SITE_INS = ""
-const val SITE_INS2 = ""
+const val SITE_NAME = "\"og:title\" content=\""
 
-const val YOAST_FIND = "yoast-schema-graph"
+const val YOAST_FIND = "\"recipeIngredient\":[\""
 const val YOAST_ING_START = "\"recipeIngredient\":[\""
 const val YOAST_ING_END = "\"]"
 const val YOAST_INS_START = "\"recipeInstructions\":["
 const val YOAST_INS_END = "]"
 const val YOAST_INS2_START = "text\":\""
-const val YOAST_INS2_END = "\","
+const val YOAST_INS2_END = "\",\""
 
-fun getRecipeFromHTML(url: String): RecipeX {
-	println(url)
-	val connection: URLConnection = URL(url).openConnection()
-	connection.connectTimeout = 5000
-	connection.readTimeout = 5000
-	connection.connect()
+const val H3ID_FIND = "h3 id=\"ingredients\""
+const val H3ID_ING_START = "itemprop=\"ingredients\">"
+const val H3ID_ING_END = "</ul>"
+const val H3ID_ING2_START = ">"
+const val H3ID_ING2_END = "<"
+const val H3ID_INS_START = "itemprop=\"recipeInstructions\""
+const val H3ID_INS_END = "</ol>"
+const val H3ID_INS2_START = "<li>"
+const val H3ID_INS2_END = "</li>"
 
-	val input: InputStream = connection.getInputStream()
-	val reader = BufferedReader(InputStreamReader(input))
-	var line: String
-	var nextLine: String
+const val SRP_FIND = ".simple-recipe-pro"
+const val SRP_ING_START = "\"recipeIngredient\": ["
+const val SRP_ING_END = "],"
+const val SRP_ING2_START = "\""
+const val SRP_ING2_END = "\""
+const val SRP_INS_START = "\"recipeInstructions\":"
+const val SRP_INS_END = "</ol>\""
+const val SRP_INS2_START = "<li>"
+const val SRP_INS2_END = "</li>"
+
+fun getRecipeFromHTML(url: String, pos: Int): Int {
+	var urlPassed = false
+	lateinit var reader: BufferedReader
+	lateinit var input: InputStream
+	while (!urlPassed) {
+		var testUrl = url.trimEnd()
+
+		if (!testUrl.startsWith("https://", true))
+			testUrl = "https://$testUrl"
+		var testUrl2 = testUrl.substringAfter("//").substringBefore("/")
+		testUrl2 = testUrl2.substringAfterLast(".")
+		if (testUrl2.length <= 1 || testUrl2.length >= 5) {
+			println("Invalid URL; terminating program")
+			return 1   // invalid URL ending address
+		}
+
+		val sslContext: SSLContext = SSLContext.getInstance("TLSv1.2")
+		sslContext.init(null, null, null)
+		val socketFactory = sslContext.socketFactory
+		val connection: HttpsURLConnection
+		try {
+			connection = URL(testUrl).openConnection() as HttpsURLConnection
+		} catch (e: MalformedURLException) {
+			print("MalformedURL: $e")
+			return 1
+		} catch (e: IOException) {
+			print("IO error: $e")
+			return 2
+		}
+		connection.sslSocketFactory = socketFactory
+		connection.setRequestProperty(
+				"User-Agent",
+				"Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:85.0) Gecko/20100101 Firefox/85.0")
+		connection.connectTimeout = 5000
+		connection.readTimeout = 5000
+		try {
+			connection.connect()
+		} catch (e: UnknownHostException) {
+			println("Error: $e")
+			continue
+		}
+
+		try {
+			input = connection.inputStream
+		} catch (e: IOException) {
+			println("Error: $e")
+			println("Could not get recipe from URL")
+			return 2
+		}
+		reader = BufferedReader(InputStreamReader(input))
+		urlPassed = true
+	}
+	var line: String? = reader.readLine()
 
 	var name = ""
 	var ingredients = ""
@@ -45,62 +109,57 @@ fun getRecipeFromHTML(url: String): RecipeX {
 	var ingFlag = true
 	var insFlag = true
 	var usesYoast = false
-
+	var usesH3ID = false
+	var usesSRP = false
 
 	if (url.contains(ALLRECIPES_URL)) {
-		while (reader.readLine().also { line = it } != null) {
+		while (line != null) {
 			if (!nameFlag && !ingFlag && !insFlag) {
 				break
 			}
 			if (nameFlag && line.contains(ALLRECIPES_NAME, true)) {
 				name = line.substringAfter(ALLRECIPES_NAME).substringBefore("\">")
-				println(name)
 				nameFlag = false
 			}
 			if (ingFlag && line.contains(ALLRECIPES_ING, true)) {
-				nextLine = reader.readLine()
-				while (!nextLine.endsWith("],")) {
-					ingredients += nextLine.substringAfter("\"").substringBefore("\"")
-					ingredients += "\n"
-					nextLine = reader.readLine()
+				line = reader.readLine()
+				while (!line!!.endsWith(ALLRECIPES_ING_END)) {
+					ingredients += line.substringAfter("\"").substringBefore("\"") + "\n"
+					line = reader.readLine()
 				}
 				ingFlag = false
 			}
 			if (insFlag && line.contains(ALLRECIPES_INS, true)) {
-				nextLine = reader.readLine()
-				while (!nextLine.endsWith("],")) {
-					if (nextLine.contains(ALLRECIPES_INS2)) {
-						instructions += nextLine.substringAfter(ALLRECIPES_INS2).substringBefore("\\")
-						instructions += "\n\n"
-					}
-					nextLine = reader.readLine()
+				line = reader.readLine()
+				while (!line!!.endsWith("],")) {
+					if (line.contains(ALLRECIPES_INS2))
+						instructions += line.substringAfter(ALLRECIPES_INS2).substringBefore("\\") + "\n\n"
+					line = reader.readLine()
 				}
 				insFlag = false
 			}
+			line = reader.readLine()
 		}
 		input.close()
 	} else {
-		while (reader.readLine().also { line = it } != null) {
+		while (line != null) {
 			if (ingFlag) {
-				if (line.contains(YOAST_FIND))
+				if (line.contains(YOAST_FIND) && !usesSRP)
 					usesYoast = true
+				else if (line.contains(H3ID_FIND))
+					usesH3ID = true
+				else if (line.startsWith(SRP_FIND))
+					usesSRP = true
 			}
 			if (nameFlag && line.contains(SITE_NAME, true)) {
-				name = line.substringAfter("content=")
+				name = line.substringAfter(SITE_NAME).substringBefore("\"")
 				if (name[0] == '"') {
 					name = name.substringAfter("\"").substringBefore("\"")
 				} else if (name[0] == '\'') {
 					name = name.substringAfter("\'").substringBefore("\'")
 				}
-
-				when {
-					name.contains(".") -> name = name.substringBefore(".")
-					name.contains("|") -> name = name.substringBefore("|")
-					name.contains("-") -> name = name.substringBefore("-")
-				}
 				nameFlag = false
 			}
-
 			if (usesYoast) {
 				if (ingFlag && line.contains(YOAST_ING_START, true)) {
 					ingredients = line.substringAfter(YOAST_ING_START).substringBefore(YOAST_ING_END)
@@ -110,22 +169,122 @@ fun getRecipeFromHTML(url: String): RecipeX {
 				if (insFlag && line.contains(YOAST_INS_START, true)) {
 					line = line.substringAfter(YOAST_INS_START).substringBefore(YOAST_INS_END)
 
-					while (line.contains(YOAST_INS2_START)) {
-						instructions += line.substringAfter(YOAST_INS2_START).substringBefore(YOAST_INS2_END)
-						instructions += "\n\n"
+					while (line!!.contains(YOAST_INS2_START)) {
+						val instLine = line.substringAfter(YOAST_INS2_START).substringBefore(YOAST_INS2_END)
+						if (instLine != instructions.trim().substringAfterLast("\n")) {
+							instructions += instLine + "\n\n"
+						}
 						line = line.substringAfter(YOAST_INS2_END)
 					}
-					instructions = instructions.replace("&#039;", "'")
+					insFlag = false
+				}
+			} else if (usesH3ID) {
+				if (ingFlag && line.contains(H3ID_ING_START, true)) {
+					line = reader.readLine()
+					while (!line!!.contains(H3ID_ING_END)) {
+						ingredients += line.substringAfter(H3ID_ING2_START).substringBefore(H3ID_ING2_END) + "\n"
+						line = reader.readLine()
+					}
+					ingFlag = false
+				}
+				if (insFlag && line.contains(H3ID_INS_START, true)) {
+					line = reader.readLine()
+					while (!line!!.contains(H3ID_INS_END)) {
+						instructions += line.substringAfter(H3ID_INS2_START).substringBefore(H3ID_INS2_END) + "\n\n"
+						line = reader.readLine()
+					}
+					insFlag = false
+				}
+			} else if (usesSRP) {
+				if (ingFlag && line.contains(SRP_ING_START, true)) {
+					line = reader.readLine()
+					while (!line!!.contains(SRP_ING_END)) {
+						ingredients += line.substringAfter(SRP_ING2_START).substringBefore(SRP_ING2_END) + "\n"
+						line = reader.readLine()
+					}
+					ingFlag = false
+				}
+				if (insFlag && line.contains(SRP_INS_START, true)) {
+					line = line.substringAfter(SRP_INS_START).substringBefore(SRP_INS_END)
+
+					while (line!!.contains(SRP_INS2_START)) {
+						var instLine = line.substringAfter(SRP_INS2_START).substringBefore(SRP_INS2_END)
+						if (instLine != instructions.trim().substringAfterLast("\n")) {
+							instructions += instLine + "\n\n"
+						}
+						line = line.substringAfter(SRP_INS2_END)
+					}
 					insFlag = false
 				}
 			}
-			if (!nameFlag && !ingFlag && !insFlag) {
+			if (!nameFlag && !ingFlag && !insFlag)
 				break
-			}
+			line = reader.readLine()
 		}
+		input.close()
 	}
+	// sort and separate name
+	when {
+		name.contains(".") -> name = name.substringBefore(".")
+		name.contains("|") -> name = name.substringBefore("|")
+		name.contains("-") -> name = name.substringBeforeLast("-")
+		name.contains("(") -> name = name.substringBeforeLast("(")
+		name.contains("to cook", true) -> name = name.substringAfter("Cook").trim()
+	}
+	name = name.replace("&amp;", "&")
 
-
-
-	return RecipeX(name, ingredients, instructions, 0, true)
+	val regex = "<[^>]*>".toRegex()
+	instructions = instructions.replace(regex, "")
+	ingredients = ingredients.replace(regex, "")
+	// replace characters for ingredients
+	ingredients = ingredients.replace("\\u2014", "-")
+	ingredients = ingredients.replace("\\u2153", "⅓")
+	ingredients = ingredients.replace("\\u2155", "⅕")
+	ingredients = ingredients.replace("\\u00bc", "¼")
+	ingredients = ingredients.replace("\\u00bd", "½")
+	ingredients = ingredients.replace("\\u00be", "¾")
+	ingredients = ingredients.replace("\\u00b0", "º")
+	ingredients = ingredients.replace("\\u2109", "º")
+	ingredients = ingredients.replace("\\u00a0", "")
+	ingredients = ingredients.replace("\\u00ae", "")
+	ingredients = ingredients.replace("&amp;", "&")
+	ingredients = ingredients.replace("&#039;", "'")
+	ingredients = ingredients.replace("&#8220;", "\"")
+	ingredients = ingredients.replace("&#8221;", "\"")
+	ingredients = ingredients.replace("\\u00f1", "ñ")
+	ingredients = ingredients.replace("&#8211;", "-")
+	ingredients = ingredients.replace("\\/", "/")
+	ingredients = ingredients.replace("\\r", "")
+	ingredients = ingredients.replace("\\n", "")
+	ingredients = ingredients.trimEnd()
+	// replace characters for instructions
+	instructions = instructions.replace("&#039;", "'")
+	instructions = instructions.replace("&#215;", "×")
+	instructions = instructions.replace("&#x27;", "'")
+	instructions = instructions.replace("&#8220;", "\"")
+	instructions = instructions.replace("&#8221;", "\"")
+	instructions = instructions.replace("&quot;", "\"")
+	instructions = instructions.replace("&#8217;", "'")
+	instructions = instructions.replace("&amp;", "&")
+	instructions = instructions.replace("&nbsp;", "")
+	instructions = instructions.replace("\\u00a0", "")
+	instructions = instructions.replace("\\u00ba", "º")
+	instructions = instructions.replace("\\u00b0", "º")
+	instructions = instructions.replace("\\u2109", "º")
+	instructions = instructions.replace("\\u2019", "'")
+	instructions = instructions.replace("\\u00e9", "é")
+	instructions = instructions.replace("\\u201d", "\"")
+	instructions = instructions.replace("\\/", "/")
+	instructions = instructions.replace("\\\"", "\"")
+	instructions = instructions.trimEnd()
+	/*
+	println(name)
+	println("Ingredients:")
+	println(ingredients)
+	println("Instructions:")
+	println(instructions) */
+	if (ingredients == "" && instructions == "")
+		return 3
+	masterRecipeList.recipe[pos] = RecipeX(name, ingredients, instructions, 0, true)
+	return 0
 }

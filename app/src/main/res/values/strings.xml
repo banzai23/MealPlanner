@@ -46,16 +46,21 @@
     <string name="context_view_recipe">View Recipe</string>
     <string name="context_add_side">Add Side Dish</string>
     <string name="context_randomize">Pick New Random Recipe</string>
+    <string name="context_edit_list">Edit</string>
     <!-- warning strings -->
     <string name="warn_noCat">"Must save under at least 1 meal category:\nBreakfast, Lunch, or Dinner"</string>
     <!-- dialog strings -->
     <string name="dialog_change_title">Input title for recipe:</string>
     <string name="dialog_website_url">Input website address for recipe:</string>
+    <string name="dialog_edit_list">Edit:</string>
     <string name="dialog_ok">OK</string>
     <string name="dialog_yes">Yes</string>
     <string name="dialog_no">No</string>
     <string name="dialog_add_item">Add item to shopping list:</string>
     <string name="dialog_delete_recipe">Are you sure you want to delete recipe</string>
+    <string name="dialog_recipe_internet_error1">Error: Invalid website address</string>
+    <string name="dialog_recipe_internet_error2">Error: Unable to download from website address</string>
+    <string name="dialog_recipe_internet_error">Error: Unable to parse recipe from website</string>
     <string name="dialog_exit">Are you sure you want to exit?</string>
     <!-- snackbar strings -->
     <string name="snackbar_sl_load">Shopping list loaded!</string>

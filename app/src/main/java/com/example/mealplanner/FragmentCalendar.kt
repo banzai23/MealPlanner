@@ -74,8 +74,8 @@ class CalendarFragment : Fragment(R.layout.fragment_calendar) {
 				mealPlanList.recipe = masterMealPlanList.dinner
 
 			// done loading, now update recyclers
-			updateAct.updateRecyclerDate(false, selectedDateToSunday)
-			updateAct.updateRecyclerMP(false)
+			updateAct.updateRecyclerDate(true, selectedDateToSunday)
+			updateAct.updateRecyclerMP(true)
 
 			updateAct.saveDefaultFiles()
 			requireActivity().supportFragmentManager.popBackStack()

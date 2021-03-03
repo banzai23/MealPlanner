@@ -6,6 +6,7 @@ import android.content.DialogInterface
 import android.os.Bundle
 import android.view.*
 import android.widget.EditText
+import android.widget.PopupMenu
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.ItemTouchHelper
@@ -19,10 +20,9 @@ import kotlinx.serialization.json.Json
 import java.io.FileNotFoundException
 import java.util.*
 
-
-class ShoppingListActivity : AppCompatActivity() {
+class ShoppingListActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
 	private var _binding: ActivityShoppingListBinding? = null
-
+	lateinit var listClickListener: RecyclerClickListener
 	var allIngredients: MutableList<String> = mutableListOf()
 
 	override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,7 +40,13 @@ class ShoppingListActivity : AppCompatActivity() {
 		binding.recyclerShoppingList.layoutManager = LinearLayoutManager(this)
 		if (!loadShoppingList())    // if returns false -- no file found
 			generateShoppingList()
-		binding.recyclerShoppingList.adapter = RecyclerAdapterShoppingList(allIngredients)
+
+		listClickListener = object : RecyclerClickListener {
+			override fun onClick(view: View, position: Int) {
+				showPopup(view, position)
+			}
+		}
+		binding.recyclerShoppingList.adapter = RecyclerAdapterShoppingList(listClickListener, allIngredients)
 		val setTouch = setSLTouchHelper(binding.recyclerShoppingList)
 		setTouch.attachToRecyclerView(binding.recyclerShoppingList)
 	}
@@ -75,7 +81,7 @@ class ShoppingListActivity : AppCompatActivity() {
 		}
 		R.id.action_load -> {
 			loadShoppingList()
-			_binding!!.recyclerShoppingList.adapter = RecyclerAdapterShoppingList(allIngredients)
+			_binding!!.recyclerShoppingList.adapter = RecyclerAdapterShoppingList(listClickListener, allIngredients)
 			val snackBar = Snackbar
 					.make(_binding!!.recyclerShoppingList, getString(R.string.snackbar_sl_load), Snackbar.LENGTH_LONG)
 			snackBar.show()
@@ -83,7 +89,7 @@ class ShoppingListActivity : AppCompatActivity() {
 		}
 		R.id.action_generate -> {
 			generateShoppingList()
-			_binding!!.recyclerShoppingList.adapter = RecyclerAdapterShoppingList(allIngredients)
+			_binding!!.recyclerShoppingList.adapter = RecyclerAdapterShoppingList(listClickListener, allIngredients)
 			val snackBar = Snackbar
 					.make(_binding!!.recyclerShoppingList, getString(R.string.snackbar_sl_generate), Snackbar.LENGTH_SHORT)
 			snackBar.show()
@@ -122,10 +128,14 @@ class ShoppingListActivity : AppCompatActivity() {
 				if (split[y].isEmpty()) {
 					// do nothing
 				}
-				else if (split[y][0].isDigit())
-					getAll.add(split[y].substringAfter(" ").substringBefore(","))
+				else if (split[y][0].isDigit()) {
+					if (split[y].contains("("))
+						getAll.add(split[y].substringAfter(" ").substringBefore("("))
+					else
+						getAll.add(split[y].substringAfter(" ").substringBefore(","))
+				}
 				else
-					getAll.add(split[y].substringBefore(","))
+					getAll.add(split[y].substringBefore(",").substringBefore("("))
 			}
 		}
 		totalSize = masterMealPlanList.lunch.size
@@ -166,74 +176,55 @@ class ShoppingListActivity : AppCompatActivity() {
 			} else if (getAll[x].contains("water")) {
 				getAll.removeAt(x)
 				size--
-			} else if (getAll[x].contains("Kosher salt")) {
-				getAll[x] = "Kosher salt"
 			} else if (getAll[x].contains("salt")) {
 				getAll.removeAt(x)
 				size--
 			}
 
+			getAll[x] = getAll[x].trim()
 			when {
-				getAll[x].contains(") ") -> {
+			/*	getAll[x].contains(") ") ->
 					getAll[x] = getAll[x].substringAfter(") ")
-				}
-				getAll[x].contains(")") -> {
-					getAll[x] = getAll[x].substringAfter(")")
-				}
-				getAll[x].startsWith("teaspoon") -> {
+				getAll[x].contains(")") ->
+					getAll[x] = getAll[x].substringAfter(")") */
+				getAll[x].contains("teaspoons ", true) ->
+					getAll[x] = getAll[x].substringAfter("teaspoons ")
+				getAll[x].contains("teaspoon ", true) ->
+					getAll[x] = getAll[x].substringAfter("teaspoon ")
+				getAll[x].contains("tablespoons ", true) ->
+					getAll[x] = getAll[x].substringAfter("tablespoons ")
+				getAll[x].contains("tablespoon ", true) ->
+					getAll[x] = getAll[x].substringAfter("tablespoon ")
+				getAll[x].startsWith("tsp", true) ->
 					getAll[x] = getAll[x].substringAfter(" ")
-				}
-				getAll[x].startsWith("tsp") -> {
+				getAll[x].startsWith("tsp.", true) ->
 					getAll[x] = getAll[x].substringAfter(" ")
-				}
-				getAll[x].startsWith("tablespoon") -> {
+				getAll[x].startsWith("tbsp", true) ->
 					getAll[x] = getAll[x].substringAfter(" ")
-				}
-				getAll[x].startsWith("tbsp") -> {
+				getAll[x].startsWith("tbsp.", true) ->
 					getAll[x] = getAll[x].substringAfter(" ")
-				}
-				getAll[x].startsWith("cup") -> {
+				getAll[x].startsWith("cup", true) ->
 					getAll[x] = getAll[x].substringAfter(" ")
-				}
-				getAll[x].startsWith("large") -> {
+				getAll[x].startsWith("chopped", true) ->
 					getAll[x] = getAll[x].substringAfter(" ")
-				}
-				getAll[x].startsWith("medium") -> {
+				getAll[x].startsWith("diced", true) ->
 					getAll[x] = getAll[x].substringAfter(" ")
-				}
-				getAll[x].startsWith("small") -> {
+				getAll[x].startsWith("prepared", true) ->
 					getAll[x] = getAll[x].substringAfter(" ")
-				}
-				getAll[x].startsWith("chopped ") -> {
+				getAll[x].startsWith("ounce", true) ->
 					getAll[x] = getAll[x].substringAfter(" ")
-				}
-				getAll[x].startsWith("diced ") -> {
+				getAll[x].startsWith("oz", true) ->
 					getAll[x] = getAll[x].substringAfter(" ")
-				}
-				getAll[x].startsWith("prepared") -> {
+				getAll[x].startsWith("pound", true) ->
 					getAll[x] = getAll[x].substringAfter(" ")
-				}
-				getAll[x].startsWith("ounce") -> {
+				getAll[x].startsWith("lb", true) ->
 					getAll[x] = getAll[x].substringAfter(" ")
-				}
-				getAll[x].startsWith("oz") -> {
-					getAll[x] = getAll[x].substringAfter(" ")
-				}
-				getAll[x].startsWith("pound") -> {
-					getAll[x] = getAll[x].substringAfter(" ")
-				}
-				getAll[x].startsWith("lb") -> {
-					getAll[x] = getAll[x].substringAfter(" ")
-				}
-				getAll[x].startsWith("½") -> {
+				getAll[x].startsWith("½") ->
 					getAll[x] = getAll[x].substringAfter(" ").substringAfter(" ")
-				}
-				getAll[x].startsWith("¼") -> {
+				getAll[x].startsWith("¼") ->
 					getAll[x] = getAll[x].substringAfter(" ").substringAfter(" ")
-				}
-				getAll[x].startsWith("¾") -> {
+				getAll[x].startsWith("¾") ->
 					getAll[x] = getAll[x].substringAfter(" ").substringAfter(" ")
-				}
 			}
 			getAll[x] = getAll[x].capitalize(Locale.ENGLISH)
 			x++
@@ -249,8 +240,48 @@ class ShoppingListActivity : AppCompatActivity() {
 			dialog.dismiss()
 		}
 	}
+	private fun onDialogEdit(dialog: DialogInterface, pos: Int, text: String) {
+		if (text.isNotBlank()) {
+			allIngredients[pos] = text.trim().capitalize(Locale.ENGLISH)
+			_binding!!.recyclerShoppingList.adapter!!.notifyDataSetChanged()
+		}
+		dialog.dismiss()
+	}
 	private fun onDialogNegativeClick(dialog: DialogInterface) {
 		dialog.cancel()
+	}
+	private fun showPopup(v: View, pos: Int) {
+		PopupMenu(v.context, v).apply {
+			setOnMenuItemClickListener(this@ShoppingListActivity)
+			menu.add(pos, v.id, 0, v.context.getString(R.string.context_edit_list))
+			show()
+		}
+	}
+	override fun onMenuItemClick(item: MenuItem): Boolean {
+		return if (item.groupId >= 0)
+		{
+			editRecipePopup(item.groupId)
+			true
+		} else {
+			false
+		}
+	}
+	private fun editRecipePopup(pos: Int) {
+		val builder = AlertDialog.Builder(this)
+		val editText = EditText(this)
+		editText.setText(allIngredients[pos])
+		builder.setMessage(R.string.dialog_edit_list)
+		builder.setView(editText)
+			.setPositiveButton(R.string.dialog_ok
+			) { dialog, _ ->
+				onDialogEdit(dialog, pos, editText.text.toString())
+			}
+			.setNegativeButton(R.string.str_cancel
+			) { dialog, _ ->
+				onDialogNegativeClick(dialog)
+			}
+		builder.create()
+		builder.show()
 	}
 	private fun setSLTouchHelper(recycler: RecyclerView): ItemTouchHelper {
 		val itemTouchCallback = object : ItemTouchHelper.Callback() {
@@ -293,7 +324,7 @@ class ShoppingListActivity : AppCompatActivity() {
 		_binding = null
 	}
 }
-class RecyclerAdapterShoppingList(private var ingredients: MutableList<String>) :
+class RecyclerAdapterShoppingList(val clickListener: RecyclerClickListener, private var ingredients: MutableList<String>) :
 		RecyclerView.Adapter<RecyclerAdapterShoppingList.ViewHolder>() {
 	class ViewHolder(v: View) : RecyclerView.ViewHolder(v) {
 		val tvItem: TextView = v.findViewById(R.id.tvItem)
@@ -311,5 +342,6 @@ class RecyclerAdapterShoppingList(private var ingredients: MutableList<String>) 
 	}
 	override fun onBindViewHolder(holder: ViewHolder, position: Int) {
 		holder.tvItem.text = ingredients[position]
+		holder.tvItem.setOnClickListener { view -> clickListener.onClick(view, holder.adapterPosition) }
 	}
 }

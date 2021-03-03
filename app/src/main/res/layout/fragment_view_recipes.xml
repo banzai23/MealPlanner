@@ -30,7 +30,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textAppearance="@style/TextAppearance.AppCompat.Large"
-                android:textSize="24sp"
+                android:textSize="@dimen/text_size_header"
                 android:gravity="center"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
@@ -42,7 +42,7 @@
 				android:layout_height="wrap_content"
 				android:layout_marginTop="10dp"
 				android:layout_marginStart="5dp"
-				android:textSize="20sp"
+				android:textSize="@dimen/text_size_recipe"
 				app:layout_constraintTop_toBottomOf="@id/tv_Name"/>
 
 			<TextView
@@ -50,7 +50,8 @@
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
 				android:layout_marginStart="5dp"
-				android:textSize="20sp"
+				android:layout_marginTop="20dp"
+				android:textSize="@dimen/text_size_recipe"
 				app:layout_constraintTop_toBottomOf="@id/tv_Ingredients"/>
 
             <Button

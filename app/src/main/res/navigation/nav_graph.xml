@@ -44,7 +44,7 @@
         android:id="@+id/viewRecipesFragment"
         android:name="com.example.mealplanner.ViewRecipesFragment"
         android:label="fragment_blank_view"
-        tools:layout="@layout/fragment_blank_view" >
+        tools:layout="@layout/fragment_view_recipes" >
         <action
             android:id="@+id/action_viewRecipesFragment_to_mainActivity"
             app:destination="@id/mainActivity" />

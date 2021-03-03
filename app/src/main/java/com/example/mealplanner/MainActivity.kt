@@ -13,6 +13,10 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mealplanner.databinding.ActivityMainBinding
+import com.google.android.gms.common.GoogleApiAvailability
+import com.google.android.gms.common.GooglePlayServicesNotAvailableException
+import com.google.android.gms.common.GooglePlayServicesRepairableException
+import com.google.android.gms.security.ProviderInstaller
 import com.google.android.material.tabs.TabLayout
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
@@ -24,9 +28,9 @@ import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.*
 
+
 const val DEFAULT_RECIPE_FILE = "savedRecipes.json"
-const val DEFAULT_PLAN_FILE = "defaultPlan.json"
-const val DEFAULT_SHOPPING_LIST_FILE = "shoppingList.txt"
+const val DEFAULT_SHOPPING_LIST_FILE = "shoppingList.json"
 const val DEFAULT_EMPTY_RECIPE = "                               "
 const val BREAKFAST_CAT = 1
 const val LUNCH_CAT = 2
@@ -43,12 +47,12 @@ var assetsLoaded: Boolean = false
 data class Recipe(var recipe: MutableList<RecipeX>)
 @Serializable
 data class RecipeX(var name: String = "", var ingredients: String = "",
-				   var instructions: String = "", var cat: Int, var isMeal: Boolean)
+                   var instructions: String = "", var cat: Int, var isMeal: Boolean)
 @Serializable
 data class MealPlan(var breakfast: MutableList<RecipeX>,
-					var lunch: MutableList<RecipeX>,
-					var dinner: MutableList<RecipeX>,
-					var startDate: Long)
+                    var lunch: MutableList<RecipeX>,
+                    var dinner: MutableList<RecipeX>,
+                    var startDate: Long)
 class MealPlanData {
 	var dateIterator = intArrayOf(0, 0, 0)  // Size-3 array for the 3 categories of Meals
 	var mode = BREAKFAST_CAT            // defaults to viewing breakfast
@@ -73,10 +77,17 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 	private lateinit var activityBinding: ActivityMainBinding
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
+
+		try {
+			ProviderInstaller.installIfNeeded(this)
+		} catch (e: GooglePlayServicesRepairableException) {
+			GoogleApiAvailability.getInstance()
+					.showErrorNotification(this, e.connectionStatusCode)
+		} catch (e: GooglePlayServicesNotAvailableException) {
+		}
 		// load asset
 		if (!assetsLoaded) {
-		//	this.deleteFile(DEFAULT_PLAN_FILE)      // this is for development
-		//	this.deleteFile(DEFAULT_RECIPE_FILE)    // delete files with old formats to avoid corruption
+		//	this.deleteFile("8_2021")    // delete old files, for development
 			var inputStream: InputStream =
 			try {
 				this.openFileInput(DEFAULT_RECIPE_FILE) // load this file, if not found, load the resource
@@ -84,26 +95,38 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 				this.resources.openRawResource(R.raw.savedrecipes)
 			}
 			var inputString = inputStream.bufferedReader().readText()
+			if (inputString.isEmpty()) {
+				inputStream = this.resources.openRawResource(R.raw.savedrecipes)
+				inputString = inputStream.bufferedReader().readText()
+			}
+			else if (inputString[0] != '{') {
+				inputStream = this.resources.openRawResource(R.raw.savedrecipes)
+				inputString = inputStream.bufferedReader().readText()
+			}
 			masterRecipeList = Json.decodeFromString(inputString)   // load to the variable from the file
 			masterRecipeList.recipe.sortBy { it.toString() }    // sort alphabetically, just in case they aren't already
 
 			recipeList = Recipe(mutableListOf())    // initializing recipeList
 			updateRecipeList(mealPlan.mode)         // recipeList points to the default category
 													// list in masterRecipeList
+			val gc = GregorianCalendar()
 			try {
-				inputStream = this.openFileInput(DEFAULT_PLAN_FILE)
+				val filename: String = gc.get(Calendar.WEEK_OF_YEAR).toString() + "_" + gc.get(Calendar.YEAR).toString()
+				inputStream = this.openFileInput(filename)
 				inputString = inputStream.bufferedReader().readText()
 				masterMealPlanList = Json.decodeFromString(inputString)
 			} catch (e: FileNotFoundException) {
-				inputStream = this.resources.openRawResource(R.raw.defaultmealplan)
-				inputString = inputStream.bufferedReader().readText()
-				masterMealPlanList = Json.decodeFromString(inputString)
-				// get current date
-				val gc = GregorianCalendar()
 				while (gc.get(Calendar.DAY_OF_WEEK) != 1)
 					gc.roll(GregorianCalendar.DAY_OF_YEAR, false)
-				masterMealPlanList.startDate = gc.timeInMillis
-				// finished getting date
+				masterMealPlanList = MealPlan(mutableListOf(), mutableListOf(), mutableListOf(), gc.timeInMillis)
+				for (x in 0 until 7) {
+					val addBreak = RecipeX(DEFAULT_EMPTY_RECIPE, "", "", 1, true)
+					masterMealPlanList.breakfast.add(x, addBreak)
+					val addLunch = RecipeX(DEFAULT_EMPTY_RECIPE, "", "", 2, true)
+					masterMealPlanList.lunch.add(x, addLunch)
+					val addDinner = RecipeX(DEFAULT_EMPTY_RECIPE, "", "", 4, true)
+					masterMealPlanList.dinner.add(x, addDinner)
+				}
 			}
 
 			mealPlanList = Recipe(mutableListOf())
@@ -112,7 +135,7 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 				LUNCH_CAT -> mealPlanList.recipe.addAll(masterMealPlanList.lunch)
 				else -> mealPlanList.recipe.addAll(masterMealPlanList.dinner)
 			}
-
+			inputStream.close()
 			assetsLoaded = true
 		}
 		// asset loaded, bind the viewIDs next
@@ -152,7 +175,7 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 		val recClickListener = object : RecyclerClickListener {
 			override fun onClick(view: View, position: Int) {
 				fragmentTransaction(EditRecipeFragment(position,
-						false, true, false, ""),
+						false, true, false),
 						"savedRecipes")
 			}
 		}
@@ -192,9 +215,11 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 				updateRecyclerDate(false, masterMealPlanList.startDate)
 				updateRecyclerMP(false)
 			}
+
 			override fun onTabReselected(tab: TabLayout.Tab?) {
 				println("Tab reselected!")
 			}
+
 			override fun onTabUnselected(tab: TabLayout.Tab?) {
 				println("Tab unselected!")
 			}
@@ -209,9 +234,11 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 				updateRecipeList(mealPlan.mode)
 				updateRecyclerRecipes(false)
 			}
+
 			override fun onTabReselected(tab: TabLayout.Tab?) {
 				println("Tab reselected!")
 			}
+
 			override fun onTabUnselected(tab: TabLayout.Tab?) {
 				println("Tab unselected!")
 			}
@@ -258,6 +285,8 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 		return true
 	}
 	private fun showExitDialog() {
+		saveDefaultFiles()
+
 		val builder = AlertDialog.Builder(this)
 		builder.setMessage(R.string.dialog_exit)
 		builder.setPositiveButton(R.string.dialog_yes
@@ -317,6 +346,7 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 	}
 	override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
 		super.onActivityResult(requestCode, resultCode, data)
+		saveDefaultFiles()
 		updateRecipeList(mealPlan.mode)
 		updateRecyclerRecipes(false)
 	}
@@ -353,7 +383,10 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 			activityBinding.contentMain.recyclerRecipes.adapter!!.notifyDataSetChanged()
 	}
 	override fun saveDefaultFiles() {
-		this.openFileOutput(DEFAULT_PLAN_FILE, Context.MODE_PRIVATE).use {
+		val gc = GregorianCalendar()
+		gc.timeInMillis = masterMealPlanList.startDate
+		val filename: String = gc.get(Calendar.WEEK_OF_YEAR).toString() + "_" + gc.get(Calendar.YEAR).toString()
+		this.openFileOutput(filename, Context.MODE_PRIVATE).use {
 			val jsonToFile = Json.encodeToString(masterMealPlanList)
 			it.write(jsonToFile.toByteArray())
 		}
@@ -447,26 +480,28 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 	}
 	private fun randomizeMealPlan(mealMode: Int) {
 		val arraySize = mealPlanList.recipe.size
-		val shuffle = recipeList.copy()   // copying the list and
-		shuffle.recipe.shuffle()          // shuffling so it doesn't affect the original
-		var select = 0
-		if (mealMode == DINNER_CAT) {   // by default the Dinner List holds everything, but when I randomize,
-			var size = shuffle.recipe.size  // I want it to only randomly select strictly Dinner Category meals
-			var x = 0                       // hence the code that follows, which removes non-Dinners and continues
-			while (x < size) {
-				if (shuffle.recipe[x].cat < DINNER_CAT) {
-					shuffle.recipe.removeAt(x)
-					size--
+		val shuffle = Recipe(mutableListOf())  // copying the list and
+
+		when (mealMode) {
+			DINNER_CAT -> {
+				for (x in 0 until recipeList.recipe.size) {
+					if (recipeList.recipe[x].cat >= DINNER_CAT)
+						shuffle.recipe.add(recipeList.recipe[x])
 				}
-				x++
+			}
+			else -> {
+				for (x in 0 until recipeList.recipe.size)       // breakfast and lunch can straight add all
+					shuffle.recipe.add(recipeList.recipe[x])
 			}
 		}
+		shuffle.recipe.shuffle()
+		var select = 0
 		for (x in 0 until arraySize) {
 			if (mealPlanList.recipe[x].isMeal) {
-				mealPlanList.recipe[x].name = recipeList.recipe[select].name
-				mealPlanList.recipe[x].ingredients = recipeList.recipe[select].ingredients
-				mealPlanList.recipe[x].instructions = recipeList.recipe[select].instructions
-				mealPlanList.recipe[x].cat = recipeList.recipe[select].cat
+				mealPlanList.recipe[x].name = shuffle.recipe[select].name
+				mealPlanList.recipe[x].ingredients = shuffle.recipe[select].ingredients
+				mealPlanList.recipe[x].instructions = shuffle.recipe[select].instructions
+				mealPlanList.recipe[x].cat = shuffle.recipe[select].cat
 
 				select++
 				if (select == shuffle.recipe.size)
@@ -476,15 +511,12 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 		updateRecyclerMP(true)
 	}
 	override fun onDestroy() {
-		saveDefaultFiles()
 		super.onDestroy()
 	}
 }
-class RecyclerAdapterRecipes(rvClickListener: RecyclerClickListener,
-							 rvLongClickListener: RecyclerLongClickListener) :
+class RecyclerAdapterRecipes(val clickListener: RecyclerClickListener,
+                             val longClickListener: RecyclerLongClickListener) :
 		RecyclerView.Adapter<RecyclerAdapterRecipes.ViewHolder>() {
-	val clickListener = rvClickListener
-	val longClickListener = rvLongClickListener
 	class ViewHolder(v: View) : RecyclerView.ViewHolder(v) {
 		val tvItem: TextView = v.findViewById(R.id.tvItem)
 	}
@@ -514,10 +546,9 @@ class RecyclerAdapterRecipes(rvClickListener: RecyclerClickListener,
 		})
 	}
 }
-class RecyclerAdapterMealPlan(rvClickListener: RecyclerClickListener, private val recycler: RecyclerView) :
+class RecyclerAdapterMealPlan(val clickListener: RecyclerClickListener, private val recycler: RecyclerView) :
 		RecyclerView.Adapter<RecyclerAdapterMealPlan.ViewHolder>()
 {
-	val clickListener = rvClickListener
 	class ViewHolder(v: View) : RecyclerView.ViewHolder(v) {
 		private val tvItem: TextView = v.findViewById(R.id.tvItem)
 
@@ -679,6 +710,4 @@ private class SetDragListener(val posOfView: Int, val recycler: RecyclerView) : 
 			}
 		}
 	}
-}
-
-// May need to make minimum of Android 20 for SSL safety
+}   // TODO: Attempt to combine Recycler_Date and Recycler_Recipe!
