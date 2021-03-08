@@ -176,6 +176,8 @@ class ShoppingListActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListe
 			} else if (getAll[x].contains("water")) {
 				getAll.removeAt(x)
 				size--
+			} else if (getAll[x].contains("kosher salt")) {
+				// do nothing
 			} else if (getAll[x].contains("salt")) {
 				getAll.removeAt(x)
 				size--
@@ -324,7 +326,7 @@ class ShoppingListActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListe
 		_binding = null
 	}
 }
-class RecyclerAdapterShoppingList(val clickListener: RecyclerClickListener, private var ingredients: MutableList<String>) :
+class RecyclerAdapterShoppingList(private val clickListener: RecyclerClickListener, private var ingredients: MutableList<String>) :
 		RecyclerView.Adapter<RecyclerAdapterShoppingList.ViewHolder>() {
 	class ViewHolder(v: View) : RecyclerView.ViewHolder(v) {
 		val tvItem: TextView = v.findViewById(R.id.tvItem)

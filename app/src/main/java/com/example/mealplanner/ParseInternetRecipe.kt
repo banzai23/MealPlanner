@@ -285,6 +285,9 @@ fun getRecipeFromHTML(url: String, pos: Int): Int {
 	println(instructions) */
 	if (ingredients == "" && instructions == "")
 		return 3
+	if (name.length > MAX_RECIPE_TITLE_SIZE)
+		name = name.dropLast(name.length - MAX_RECIPE_TITLE_SIZE)
+
 	masterRecipeList.recipe[pos] = RecipeX(name, ingredients, instructions, 0, true)
 	return 0
-}
+} // TODO: Keep working on error handling

@@ -10,31 +10,34 @@ import com.example.mealplanner.databinding.FragmentEditRecipesBinding
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import java.util.*
 
 class EditRecipeFragment(position: Int,
-                         editMaster: Boolean,
-						 launchedFromMainActivity: Boolean,
-						 val preAddedNew: Boolean): Fragment(R.layout.fragment_edit_recipes) {
+                         private val editMaster: Boolean,
+                         private val launchedFromMainActivity: Boolean,
+                         private val preAddedNew: Boolean): Fragment(R.layout.fragment_edit_recipes) {
 	private var _binding: FragmentEditRecipesBinding? = null
 	private var pos = position
-	private val master = editMaster
-	private val fromMainActivity = launchedFromMainActivity
-
-	private lateinit var updateRec: RecipeActivityInterface
+	private lateinit var updateMainRec: ActivityInterface
+	private lateinit var updateRecipeRec: RecipeActivityInterface
 
 	override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 		super.onViewCreated(view, savedInstanceState)
 		val binding = FragmentEditRecipesBinding.bind(view)
 		_binding = binding
-		if (!fromMainActivity)
-			updateRec = context as RecipeActivityInterface
+
+		if (launchedFromMainActivity)
+			updateMainRec = context as ActivityInterface
+		else
+			updateRecipeRec = context as RecipeActivityInterface
+
 		val editList: Recipe =
-			if (master)
+			if (editMaster)
 				masterRecipeList
 			else
 				recipeList
 
-		binding.tvRecipe.text = editList.recipe[pos].name
+		binding.etTitle.setText(editList.recipe[pos].name)
 		binding.etRecipe.setText(editList.recipe[pos].ingredients)
 		binding.etInstructions.setText(editList.recipe[pos].instructions)
 		var cat = editList.recipe[pos].cat
@@ -101,15 +104,14 @@ class EditRecipeFragment(position: Int,
 		}
 		binding.btnSave.setOnClickListener {
 			if (cat in 1..7) {
-				if (master) {
-					masterRecipeList.recipe[pos].cat = cat
-					masterRecipeList.recipe[pos].ingredients = binding.etRecipe.text.toString()
-					masterRecipeList.recipe[pos].instructions = binding.etInstructions.text.toString()
-				} else {
-					recipeList.recipe[pos].cat = cat
-					recipeList.recipe[pos].ingredients = binding.etRecipe.text.toString()
-					recipeList.recipe[pos].instructions = binding.etInstructions.text.toString()
-				}
+				var name = binding.etTitle.text.toString().capitalize(Locale.ENGLISH)
+				if (name.length > MAX_RECIPE_TITLE_SIZE)
+					name = name.dropLast(name.length - MAX_RECIPE_TITLE_SIZE)
+				editList.recipe[pos].name = name
+				editList.recipe[pos].ingredients = binding.etRecipe.text.toString()
+				editList.recipe[pos].instructions = binding.etInstructions.text.toString()
+				editList.recipe[pos].cat = cat
+
 				masterRecipeList.recipe.sortBy { it.toString() }
 				requireContext().openFileOutput(DEFAULT_RECIPE_FILE, Context.MODE_PRIVATE).use {
 					val jsonToFile = Json.encodeToString(masterRecipeList)
@@ -129,8 +131,12 @@ class EditRecipeFragment(position: Int,
 	private fun exitEditRecipes() {
 		val imm: InputMethodManager = requireContext().getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
 		imm.hideSoftInputFromWindow(requireView().windowToken, 0)
-		if (!fromMainActivity)
-			updateRec.updateRecycler()
+
+		if (launchedFromMainActivity)
+			updateMainRec.updateRecyclerRecipes(false)
+		else
+			updateRecipeRec.updateRecycler()
+
 		requireActivity().supportFragmentManager.popBackStack()
 	}
 	override fun onDestroyView() {

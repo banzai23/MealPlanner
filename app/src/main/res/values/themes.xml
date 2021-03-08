@@ -1,18 +1,15 @@
 <resources>
     <style name="Theme.MealPlanner" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-
         <item name="colorPrimary">@color/black</item>
-        <item name="colorPrimaryVariant">@color/white</item>
         <item name="colorOnPrimary">@color/white</item>
-
         <item name="android:textColor">@color/black</item>
         <item name="android:textSize">@dimen/toolbar_text_size</item>
     </style>
     <style name="ButtonRM" parent="Widget.AppCompat.Button.Small">
-        <item name="android:textSize">@dimen/text_size</item>
+        <item name="android:textSize">@dimen/toolbar_text_size</item>
         <item name="android:minHeight">0dp</item>
         <item name="android:minWidth">0dp</item>
-        <item name="android:padding">5dp</item>
+        <item name="android:padding">4dp</item>
     </style>
     <style name="ButtonMP" parent="Widget.AppCompat.Button.Colored">
         <item name="buttonGravity">center_vertical</item>

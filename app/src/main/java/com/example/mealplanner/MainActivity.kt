@@ -28,7 +28,7 @@ import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.*
 
-
+const val MAX_RECIPE_TITLE_SIZE = 32
 const val DEFAULT_RECIPE_FILE = "savedRecipes.json"
 const val DEFAULT_SHOPPING_LIST_FILE = "shoppingList.json"
 const val DEFAULT_EMPTY_RECIPE = "                               "
@@ -37,7 +37,7 @@ const val LUNCH_CAT = 2
 const val DINNER_CAT = 4
 
 lateinit var masterRecipeList: Recipe       // for storing every recipe
-lateinit var recipeList: Recipe             // for RecyclerAdapter
+lateinit var recipeList: Recipe             // for RecyclerRecipes
 lateinit var masterMealPlanList: MealPlan   // for storing every meal
 lateinit var mealPlanList: Recipe           // for RecyclerMealPlan
 
@@ -56,7 +56,7 @@ data class MealPlan(var breakfast: MutableList<RecipeX>,
 class MealPlanData {
 	var dateIterator = intArrayOf(0, 0, 0)  // Size-3 array for the 3 categories of Meals
 	var mode = BREAKFAST_CAT            // defaults to viewing breakfast
-	var position: Int = 0               // easier way to hold position data instead of passing
+	var position: Int = 0               // easier way to hold position data, instead of passing
 	var isMealMode = true               // defaults to meals, not sides
 }
 interface ActivityInterface {
@@ -208,10 +208,8 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 
 				if (!mealPlan.isMealMode)
 					activityBinding.contentMain.tabsMS.getTabAt(0)!!.select()
-				else {  // so we don't call the following functions twice for no reason
-					updateRecipeList(mealPlan.mode)
+				else  // so we don't call the following functions twice for no reason
 					updateRecyclerRecipes(false)
-				}
 				updateRecyclerDate(false, masterMealPlanList.startDate)
 				updateRecyclerMP(false)
 			}
@@ -231,7 +229,6 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 				else if (tab.position == 1)
 					mealPlan.isMealMode = false
 
-				updateRecipeList(mealPlan.mode)
 				updateRecyclerRecipes(false)
 			}
 
@@ -347,7 +344,6 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 	override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
 		super.onActivityResult(requestCode, resultCode, data)
 		saveDefaultFiles()
-		updateRecipeList(mealPlan.mode)
 		updateRecyclerRecipes(false)
 	}
 	override fun fragmentTransaction(fragment: Fragment, tag: String) {
@@ -377,6 +373,7 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 			activityBinding.contentMain.recyclerMP.adapter!!.notifyDataSetChanged()
 	}
 	override fun updateRecyclerRecipes(smoothTransition: Boolean) {
+		updateRecipeList(mealPlan.mode)
 		if (smoothTransition)
 			activityBinding.contentMain.recyclerRecipes.adapter!!.notifyItemRangeChanged(0, mealPlanList.recipe.size)
 		else
@@ -513,201 +510,191 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 	override fun onDestroy() {
 		super.onDestroy()
 	}
-}
-class RecyclerAdapterRecipes(val clickListener: RecyclerClickListener,
-                             val longClickListener: RecyclerLongClickListener) :
-		RecyclerView.Adapter<RecyclerAdapterRecipes.ViewHolder>() {
-	class ViewHolder(v: View) : RecyclerView.ViewHolder(v) {
-		val tvItem: TextView = v.findViewById(R.id.tvItem)
-	}
+	class RecyclerAdapterRecipes(private val clickListener: RecyclerClickListener,
+	                             private val longClickListener: RecyclerLongClickListener) :
+			RecyclerView.Adapter<RecyclerAdapterRecipes.ViewHolder>() {
+		class ViewHolder(v: View) : RecyclerView.ViewHolder(v) {
+			val tvItem: TextView = v.findViewById(R.id.tvItem)
+		}
 
-	override fun getItemCount() = recipeList.recipe.size
+		override fun getItemCount() = recipeList.recipe.size
 
-	override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-		val inflatedView = LayoutInflater.from(parent.context).inflate(
-				R.layout.recycler_meal_plan,
-				parent,
-				false
-		)
-		return ViewHolder(inflatedView)
-	}
-	override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-		holder.tvItem.text = recipeList.recipe[position].name
-		holder.tvItem.setOnClickListener(object : View.OnClickListener {
-			override fun onClick(view: View) {
-				clickListener.onClick(view, holder.adapterPosition)
-			}
-		})
-		holder.tvItem.setOnLongClickListener(object : View.OnLongClickListener {
-			override fun onLongClick(view: View): Boolean {
+		override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+			val inflatedView = LayoutInflater.from(parent.context).inflate(
+					R.layout.recycler_meal_plan,
+					parent,
+					false
+			)
+			return ViewHolder(inflatedView)
+		}
+		override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+			holder.tvItem.text = recipeList.recipe[position].name
+			holder.tvItem.setOnClickListener { view -> clickListener.onClick(view, holder.adapterPosition) }
+			holder.tvItem.setOnLongClickListener { view ->
 				longClickListener.onLongClick(view, holder.adapterPosition)
+				true
+			}
+		}
+	}
+	class RecyclerAdapterMealPlan(private val clickListener: RecyclerClickListener, private val recycler: RecyclerView) :
+			RecyclerView.Adapter<RecyclerAdapterMealPlan.ViewHolder>()
+	{
+		class ViewHolder(v: View) : RecyclerView.ViewHolder(v) {
+			private val tvItem: TextView = v.findViewById(R.id.tvItem)
+
+			fun bind(position: Int) {
+				tvItem.tag = position.toString()
+				tvItem.text = mealPlanList.recipe[position].name
+			}
+		}
+		override fun getItemCount() = mealPlanList.recipe.size
+
+		override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+			val inflatedView = LayoutInflater.from(parent.context).inflate(
+					R.layout.recycler_meal_plan,
+					parent,
+					false
+			)
+			return ViewHolder(inflatedView)
+		}
+		override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+			holder.bind(position)
+			holder.itemView.setOnClickListener { view -> clickListener.onClick(view, holder.adapterPosition) }
+			holder.itemView.setOnDragListener(SetDragListener(position, recycler))
+		}
+	}
+	class RecyclerAdapterDate() :
+			RecyclerView.Adapter<RecyclerAdapterDate.ViewHolder>()
+	{
+		class ViewHolder(v: View) : RecyclerView.ViewHolder(v) {
+			val tvItem: TextView = v.findViewById(R.id.tvItem)
+		}
+		override fun getItemCount() = mealPlanList.recipe.size
+
+		override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+			val inflatedView = LayoutInflater.from(parent.context).inflate(
+					R.layout.recycler_meal_plan,
+					parent,
+					false
+			)
+			return ViewHolder(inflatedView)
+		}
+		override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+			if (position == 0) {
+				mealPlan.dateIterator = intArrayOf(0, 0, 0)
+			}
+			if (mealPlanList.recipe[position].isMeal) {
+				val gc = GregorianCalendar()
+				gc.timeInMillis = masterMealPlanList.startDate
+
+				if (mealPlan.mode == DINNER_CAT) {
+					gc.add(Calendar.DATE, mealPlan.dateIterator[2])
+					mealPlan.dateIterator[2]++
+				} else {
+					val x = mealPlan.mode - 1   // the position for Breakfast is 0 (Cat - 1), Lunch is 1 (Cat - 1)
+					gc.add(Calendar.DATE, mealPlan.dateIterator[x])
+					mealPlan.dateIterator[x]++
+				}
+
+				val df: DateFormat = SimpleDateFormat("MM/dd E", Locale.ENGLISH)
+				holder.tvItem.text = df.format(gc.time)
+			}
+			else
+				holder.tvItem.text = " "    // if not a meal, a side, then show no date for the row
+		}
+	}
+	private fun setMPTouchHelper(recycler: RecyclerView, dateRec: RecyclerView): ItemTouchHelper {
+		val itemTouchCallback = object : ItemTouchHelper.Callback() {
+			override fun isLongPressDragEnabled() = true
+			override fun isItemViewSwipeEnabled() = true
+			override fun getMovementFlags(
+					recyclerView: RecyclerView, viewHolder:
+					RecyclerView.ViewHolder
+			): Int {
+				val dragFlags = ItemTouchHelper.UP or ItemTouchHelper.DOWN
+				val swipeFlags = ItemTouchHelper.END
+				return makeMovementFlags(dragFlags, swipeFlags)
+			}
+			override fun onMove(
+					recyclerView: RecyclerView, source: RecyclerView.ViewHolder,
+					target: RecyclerView.ViewHolder
+			): Boolean {
+				if (source.itemViewType != target.itemViewType)
+					return false
+				val sourcePos = source.adapterPosition
+				val targetPos = target.adapterPosition
+				val saveSource = mealPlanList.recipe[sourcePos].copy()
+				mealPlanList.recipe[sourcePos] = mealPlanList.recipe[targetPos].copy()
+				mealPlanList.recipe[targetPos] = saveSource
+
+				recyclerView.adapter!!.notifyItemMoved(source.adapterPosition, target.adapterPosition)
+
 				return true
 			}
-		})
-	}
-}
-class RecyclerAdapterMealPlan(val clickListener: RecyclerClickListener, private val recycler: RecyclerView) :
-		RecyclerView.Adapter<RecyclerAdapterMealPlan.ViewHolder>()
-{
-	class ViewHolder(v: View) : RecyclerView.ViewHolder(v) {
-		private val tvItem: TextView = v.findViewById(R.id.tvItem)
+			override fun onSwiped(viewHolder: RecyclerView.ViewHolder, swipeDir: Int) {
+				val pos = viewHolder.adapterPosition
+				if (mealPlanList.recipe[pos].isMeal) {
+					mealPlanList.recipe[pos].name = DEFAULT_EMPTY_RECIPE
+					mealPlanList.recipe[pos].ingredients = ""
+					mealPlanList.recipe[pos].instructions = ""
+					mealPlanList.recipe[pos].cat = mealPlan.mode
 
-		fun bind(position: Int) {
-			tvItem.tag = position.toString()
-			tvItem.text = mealPlanList.recipe[position].name
-		}
-	}
-	override fun getItemCount() = mealPlanList.recipe.size
-
-	override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-		val inflatedView = LayoutInflater.from(parent.context).inflate(
-				R.layout.recycler_meal_plan,
-				parent,
-				false
-		)
-		return ViewHolder(inflatedView)
-	}
-	override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-		holder.bind(position)
-		holder.itemView.setOnClickListener(object : View.OnClickListener {
-			override fun onClick(view: View) {
-				clickListener.onClick(view, holder.adapterPosition)
-			}
-		})
-		holder.itemView.setOnDragListener(SetDragListener(position, recycler))
-	}
-}
-class RecyclerAdapterDate() :
-	RecyclerView.Adapter<RecyclerAdapterDate.ViewHolder>()
-{
-	class ViewHolder(v: View) : RecyclerView.ViewHolder(v) {
-		val tvItem: TextView = v.findViewById(R.id.tvItem)
-	}
-	override fun getItemCount() = mealPlanList.recipe.size
-
-	override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-		val inflatedView = LayoutInflater.from(parent.context).inflate(
-				R.layout.recycler_meal_plan,
-				parent,
-				false
-		)
-		return ViewHolder(inflatedView)
-	}
-	override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-		if (position == 0) {
-			mealPlan.dateIterator = intArrayOf(0, 0, 0)
-		}
-		if (mealPlanList.recipe[position].isMeal) {
-			val gc = GregorianCalendar()
-			gc.timeInMillis = masterMealPlanList.startDate
-
-			if (mealPlan.mode == DINNER_CAT) {
-				gc.add(Calendar.DATE, mealPlan.dateIterator[2])
-				mealPlan.dateIterator[2]++
-			} else {
-				val x = mealPlan.mode - 1   // the position for Breakfast is 0 (Cat - 1), Lunch is 1 (Cat - 1)
-				gc.add(Calendar.DATE, mealPlan.dateIterator[x])
-				mealPlan.dateIterator[x]++
-			}
-
-			val df: DateFormat = SimpleDateFormat("MM/dd E", Locale.ENGLISH)
-			holder.tvItem.text = df.format(gc.time)
-		}
-		else
-			holder.tvItem.text = " "    // if not a meal, a side, then show no date for the row
-	}
-}
-fun setMPTouchHelper(recycler: RecyclerView, dateRec: RecyclerView): ItemTouchHelper {
-	val itemTouchCallback = object : ItemTouchHelper.Callback() {
-		override fun isLongPressDragEnabled() = true
-		override fun isItemViewSwipeEnabled() = true
-		override fun getMovementFlags(
-				recyclerView: RecyclerView, viewHolder:
-				RecyclerView.ViewHolder
-		): Int {
-			val dragFlags = ItemTouchHelper.UP or ItemTouchHelper.DOWN
-			val swipeFlags = ItemTouchHelper.END
-			return makeMovementFlags(dragFlags, swipeFlags)
-		}
-		override fun onMove(
-				recyclerView: RecyclerView, source: RecyclerView.ViewHolder,
-				target: RecyclerView.ViewHolder
-		): Boolean {
-			if (source.itemViewType != target.itemViewType)
-				return false
-			val sourcePos = source.adapterPosition
-			val targetPos = target.adapterPosition
-			val saveSource = mealPlanList.recipe[sourcePos].copy()
-			mealPlanList.recipe[sourcePos] = mealPlanList.recipe[targetPos].copy()
-			mealPlanList.recipe[targetPos] = saveSource
-
-			recyclerView.adapter!!.notifyItemMoved(source.adapterPosition, target.adapterPosition)
-
-			return true
-		}
-		override fun onSwiped(viewHolder: RecyclerView.ViewHolder, swipeDir: Int) {
-			val pos = viewHolder.adapterPosition
-			if (mealPlanList.recipe[pos].isMeal) {
-				mealPlanList.recipe[pos].name = DEFAULT_EMPTY_RECIPE
-				mealPlanList.recipe[pos].ingredients = " "
-				mealPlanList.recipe[pos].instructions = " "
-				mealPlanList.recipe[pos].cat = mealPlan.mode
-
-				recycler.adapter!!.notifyItemChanged(viewHolder.adapterPosition)
-			} else {
-				mealPlanList.recipe.removeAt(pos)
-				recycler.adapter!!.notifyDataSetChanged()
-				dateRec.adapter!!.notifyDataSetChanged()
+					recycler.adapter!!.notifyItemChanged(viewHolder.adapterPosition)
+				} else {
+					mealPlanList.recipe.removeAt(pos)
+					recycler.adapter!!.notifyDataSetChanged()
+					dateRec.adapter!!.notifyDataSetChanged()
+				}
 			}
 		}
+		return ItemTouchHelper(itemTouchCallback)
 	}
-	return ItemTouchHelper(itemTouchCallback)
-}
-private class SetDragListener(val posOfView: Int, val recycler: RecyclerView) : View.OnDragListener
-{
-	override fun onDrag(v: View, event: DragEvent): Boolean {
-		when (event.action) {
-			DragEvent.ACTION_DRAG_STARTED -> {
-				if (event.clipDescription.hasMimeType(ClipDescription.MIMETYPE_TEXT_PLAIN)) {
+	private class SetDragListener(val posOfView: Int, val recycler: RecyclerView) : View.OnDragListener
+	{
+		override fun onDrag(v: View, event: DragEvent): Boolean {
+			when (event.action) {
+				DragEvent.ACTION_DRAG_STARTED -> {
+					if (event.clipDescription.hasMimeType(ClipDescription.MIMETYPE_TEXT_PLAIN)) {
+						v.invalidate()
+						return true
+					} else {
+						return false
+					}
+				}
+				DragEvent.ACTION_DRAG_ENTERED -> {
 					v.invalidate()
 					return true
-				} else {
+				}
+				DragEvent.ACTION_DRAG_LOCATION ->
+					// Ignore the event
+					return true
+				DragEvent.ACTION_DRAG_EXITED -> {
+					v.invalidate()
+					return true
+				}
+				DragEvent.ACTION_DROP -> {
+					val item: ClipData.Item = event.clipData.getItemAt(0)
+
+					//  (v as? ImageView)?.clearColorFilter()
+					//  (v as? TextView)?.setBackgroundColor(Color.TRANSPARENT)
+					//  v.invalidate()
+					val posOfDragged: Int = item.text.toString().toInt()
+					val pos = posOfView
+					mealPlanList.recipe[pos].name = recipeList.recipe[posOfDragged].name
+					mealPlanList.recipe[pos].ingredients = recipeList.recipe[posOfDragged].ingredients
+					mealPlanList.recipe[pos].instructions = recipeList.recipe[posOfDragged].instructions
+					mealPlanList.recipe[pos].cat = recipeList.recipe[posOfDragged].cat
+					recycler.adapter!!.notifyItemChanged(posOfView)
+					return true
+				}
+				DragEvent.ACTION_DRAG_ENDED -> {
+					// do nothing
+					return true
+				}
+				else -> {
 					return false
 				}
 			}
-			DragEvent.ACTION_DRAG_ENTERED -> {
-				v.invalidate()
-				return true
-			}
-			DragEvent.ACTION_DRAG_LOCATION ->
-				// Ignore the event
-				return true
-			DragEvent.ACTION_DRAG_EXITED -> {
-				v.invalidate()
-				return true
-			}
-			DragEvent.ACTION_DROP -> {
-				val item: ClipData.Item = event.clipData.getItemAt(0)
-
-				//  (v as? ImageView)?.clearColorFilter()
-				//  (v as? TextView)?.setBackgroundColor(Color.TRANSPARENT)
-				//  v.invalidate()
-				val posOfDragged: Int = item.text.toString().toInt()
-				val pos = posOfView
-				mealPlanList.recipe[pos].name = recipeList.recipe[posOfDragged].name
-				mealPlanList.recipe[pos].ingredients = recipeList.recipe[posOfDragged].ingredients
-				mealPlanList.recipe[pos].instructions = recipeList.recipe[posOfDragged].instructions
-				mealPlanList.recipe[pos].cat = recipeList.recipe[posOfDragged].cat
-				recycler.adapter!!.notifyItemChanged(posOfView)
-				return true
-			}
-			DragEvent.ACTION_DRAG_ENDED -> {
-				// do nothing
-				return true
-			}
-			else -> {
-				return false
-			}
 		}
 	}
-}   // TODO: Attempt to combine Recycler_Date and Recycler_Recipe!
+}

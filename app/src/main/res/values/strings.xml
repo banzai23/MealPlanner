@@ -22,6 +22,7 @@
     <string name="str_load">Load</string>
     <string name="str_select">Select</string>
     <string name="str_back">Back</string>
+    <string name="str_recipe_title_hint">Name</string>
     <string name="str_recipe_ing_hint">Ingredients</string>
     <string name="str_recipe_instr_hint">Instructions</string>
     <string name="str_shopping_list">Shopping List</string>
@@ -38,8 +39,8 @@
     <string name="menu_save">Save</string>
     <string name="menu_load">Load</string>
     <string name="menu_item">+Item</string>
-    <string name="menu_new_recipe">Add Recipe</string>
-    <string name="menu_new_recipe_internet">Add recipe from website</string>
+    <string name="menu_new_recipe">Add Custom</string>
+    <string name="menu_new_recipe_internet">Add From site</string>
     <string name="menu_generate">Generate shopping list from meal plan</string>
 
     <!-- context menu strings -->

@@ -17,6 +17,7 @@ import java.util.*
 interface RecipeActivityInterface {
 	fun updateRecycler()
 }
+
 class RecipeManagerActivity : AppCompatActivity(), RecipeActivityInterface {
 	private var _binding: ActivityRecipeManagerBinding? = null
 	override fun onCreate(savedInstanceState: Bundle?) {
@@ -72,11 +73,12 @@ class RecipeManagerActivity : AppCompatActivity(), RecipeActivityInterface {
 	}
 	override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
 		R.id.action_new_recipe -> {
-			openDialog(false)
+			masterRecipeList.recipe.add(RecipeX("", "", "", 0, true))
+			loadEditRecipe(masterRecipeList.recipe.size - 1) // the position is the new size - 1
 			true
 		}
 		R.id.action_new_recipe_internet -> {
-			openDialog(true)
+			openDialog()
 			true
 		}
 		else -> {
@@ -88,17 +90,14 @@ class RecipeManagerActivity : AppCompatActivity(), RecipeActivityInterface {
 		inflater.inflate(R.menu.menu_recipe_manager, menu)
 		return true
 	}
-	private fun openDialog(addInternet: Boolean) {
+	private fun openDialog() {
 		val builder = AlertDialog.Builder(this)
 		val editText = EditText(this)
-		if (addInternet)
-			builder.setMessage(R.string.dialog_website_url)
-		else
-			builder.setMessage(R.string.dialog_change_title)
+		builder.setMessage(R.string.dialog_website_url)
 		builder.setView(editText)
 			.setPositiveButton(R.string.dialog_ok
 			) { dialog, _ ->
-				onDialogPositiveClick(dialog, addInternet, editText.text.toString())
+				onDialogPositiveClick(dialog, editText.text.toString())
 			}
 			.setNegativeButton(R.string.str_cancel
 			) { dialog, _ ->
@@ -123,41 +122,17 @@ class RecipeManagerActivity : AppCompatActivity(), RecipeActivityInterface {
 		builder.create()
 		builder.show()
 	}
-	private fun onDialogPositiveClick(dialog: DialogInterface, parseWebsite: Boolean, urlOrTitle: String) {
-		fun loadEditRecipe(pos: Int) {
-			val fragmentManager = supportFragmentManager
-			val transaction = fragmentManager.beginTransaction()
-			transaction.replace(
-					R.id.rm_root,
-					EditRecipeFragment(pos, true,
-							false, true),
-					"editRecipe"
-			)
-			transaction.addToBackStack(null)
-			transaction.commit()
-		}
-
-		val addThis =
-			if (!parseWebsite)
-				RecipeX(urlOrTitle.capitalize(Locale.ENGLISH), "", "", 0, true)
-			else
-				RecipeX("", "", "", 0, true)
-		masterRecipeList.recipe.add(addThis)
+	private fun onDialogPositiveClick(dialog: DialogInterface, url: String) {
+		masterRecipeList.recipe.add(RecipeX("", "", "", 0, true))
 		val pos = masterRecipeList.recipe.size - 1 // the position is the new size - 1
-		// TODO: Add loading dialog
-		if (parseWebsite) {
-			val returnCode = getRecipeFromHTML(urlOrTitle, pos)
-			if (returnCode != 0) {
-				dialog.dismiss()
-				masterRecipeList.recipe.removeLast()
-				showErrorDialog(returnCode)
-			}
-			else {
-				dialog.dismiss()
-				loadEditRecipe(pos)
-			}
-		} else {
-			dialog.dismiss()
+		// Add loading progress bar
+		dialog.dismiss()
+		val returnCode = getRecipeFromHTML(url, pos)
+		if (returnCode != 0) {
+			masterRecipeList.recipe.removeLast()
+			showErrorDialog(returnCode)
+		}
+		else {
 			loadEditRecipe(pos)
 		}
 	}
@@ -166,17 +141,27 @@ class RecipeManagerActivity : AppCompatActivity(), RecipeActivityInterface {
 	}
 	override fun updateRecycler() {
 		_binding!!.recyclerRM.adapter!!.notifyDataSetChanged()
-		println("UPDATED RECYCLER!")
 	}
 	override fun onDestroy() {
 		super.onDestroy()
 		_binding = null
 	}
+	private fun loadEditRecipe(pos: Int) {
+		val fragmentManager = supportFragmentManager
+		val transaction = fragmentManager.beginTransaction()
+		transaction.replace(
+				R.id.rm_root,
+				EditRecipeFragment(pos, true,
+						false, true),
+				"editRecipe"
+		)
+		transaction.addToBackStack(null)
+		transaction.commit()
+	}
 }
-class RecyclerAdapterRecipeManager(listenerPass: RecyclerClickListener):
+class RecyclerAdapterRecipeManager(private val listener: RecyclerClickListener):
 	RecyclerView.Adapter<RecyclerAdapterRecipeManager.ViewHolder>()
 {
-	val listener = listenerPass
 	class ViewHolder(v: View) : RecyclerView.ViewHolder(v) {
 		val tvItem: TextView = v.findViewById(R.id.tv_Item)
 		val btnEdit: Button = v.findViewById(R.id.btn_Edit)
@@ -195,15 +180,7 @@ class RecyclerAdapterRecipeManager(listenerPass: RecyclerClickListener):
 	}
 	override fun onBindViewHolder(holder: ViewHolder, position: Int) {
 		holder.tvItem.text = masterRecipeList.recipe[position].name
-		holder.btnEdit.setOnClickListener(object : View.OnClickListener {
-			override fun onClick(view: View) {
-				listener.onClick(view, holder.adapterPosition)
-			}
-		})
-		holder.btnDelete.setOnClickListener(object : View.OnClickListener {
-			override fun onClick(view: View) {
-				listener.onClick(view, holder.adapterPosition)
-			}
-		})
+		holder.btnEdit.setOnClickListener { view -> listener.onClick(view, holder.adapterPosition) }
+		holder.btnDelete.setOnClickListener { view -> listener.onClick(view, holder.adapterPosition) }
 	}
 }
