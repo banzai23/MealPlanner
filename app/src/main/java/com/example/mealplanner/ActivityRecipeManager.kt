@@ -39,17 +39,8 @@ class RecipeManagerActivity : AppCompatActivity(), RecipeActivityInterface {
 		val rmClickListener = object : RecyclerClickListener {
 			override fun onClick(view: View, position: Int) {
 				if (view.id == R.id.btn_Edit) {
-					val fragmentManager = supportFragmentManager
-					val transaction = fragmentManager.beginTransaction()
-					transaction.replace(
-							R.id.rm_root,
-							EditRecipeFragment(position, true, false, false),
-							"editRecipe"
-					)
-					transaction.addToBackStack(null)
-					transaction.commit()
-				}
-				else if (view.id == R.id.btn_Delete) {
+					loadEditRecipe(position, false)
+				} else if (view.id == R.id.btn_Delete) {
 					val builder = AlertDialog.Builder(this@RecipeManagerActivity)
 					val dialogString = getString(R.string.dialog_delete_recipe)+" \""+masterRecipeList.recipe[position].name+"\"?"
 					builder.setMessage(dialogString)
@@ -74,7 +65,7 @@ class RecipeManagerActivity : AppCompatActivity(), RecipeActivityInterface {
 	override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
 		R.id.action_new_recipe -> {
 			masterRecipeList.recipe.add(RecipeX("", "", "", 0, true))
-			loadEditRecipe(masterRecipeList.recipe.size - 1) // the position is the new size - 1
+			loadEditRecipe(masterRecipeList.recipe.size - 1, true) // the position is the new size - 1
 			true
 		}
 		R.id.action_new_recipe_internet -> {
@@ -112,6 +103,8 @@ class RecipeManagerActivity : AppCompatActivity(), RecipeActivityInterface {
 			builder.setMessage(R.string.dialog_recipe_internet_error1)
 		else if (errorCode == 2)
 			builder.setMessage(R.string.dialog_recipe_internet_error2)
+		else if (errorCode == 3)
+			builder.setMessage(R.string.dialog_recipe_internet_error3)
 		else
 			builder.setMessage(R.string.dialog_recipe_internet_error)
 
@@ -123,17 +116,16 @@ class RecipeManagerActivity : AppCompatActivity(), RecipeActivityInterface {
 		builder.show()
 	}
 	private fun onDialogPositiveClick(dialog: DialogInterface, url: String) {
-		masterRecipeList.recipe.add(RecipeX("", "", "", 0, true))
-		val pos = masterRecipeList.recipe.size - 1 // the position is the new size - 1
-		// Add loading progress bar
 		dialog.dismiss()
-		val returnCode = getRecipeFromHTML(url, pos)
-		if (returnCode != 0) {
-			masterRecipeList.recipe.removeLast()
-			showErrorDialog(returnCode)
-		}
+		val recipeAndReturn = getRecipeFromURL(url)
+		if (recipeAndReturn.returnCode != 0)
+			showErrorDialog(recipeAndReturn.returnCode)
 		else {
-			loadEditRecipe(pos)
+			masterRecipeList.recipe.add(RecipeX(recipeAndReturn.name,
+					recipeAndReturn.ingredients,
+					recipeAndReturn.instructions,
+					0, true))
+			loadEditRecipe(masterRecipeList.recipe.size - 1, true) // the position is the new size - 1
 		}
 	}
 	private fun onDialogNegativeClick(dialog: DialogInterface) {
@@ -146,16 +138,21 @@ class RecipeManagerActivity : AppCompatActivity(), RecipeActivityInterface {
 		super.onDestroy()
 		_binding = null
 	}
-	private fun loadEditRecipe(pos: Int) {
+	private fun loadEditRecipe(pos: Int, deleteOnCancel: Boolean) {
 		val fragmentManager = supportFragmentManager
 		val transaction = fragmentManager.beginTransaction()
-		transaction.replace(
-				R.id.rm_root,
-				EditRecipeFragment(pos, true,
-						false, true),
-				"editRecipe"
-		)
-		transaction.addToBackStack(null)
+		val findFrag = fragmentManager.findFragmentByTag("editRecipe")
+		fragmentManager.executePendingTransactions()
+		if (findFrag != null) {  // following code keeps only one instance of any fragment at one time
+			transaction.replace(
+					R.id.rm_root,
+					findFrag,
+					"editRecipe")
+		} else {
+			transaction.add(R.id.rm_root, EditRecipeFragment(pos, true,
+					false, deleteOnCancel), "editRecipe")
+			transaction.addToBackStack(null)
+		}
 		transaction.commit()
 	}
 }
@@ -174,8 +171,7 @@ class RecyclerAdapterRecipeManager(private val listener: RecyclerClickListener):
 		val inflatedView = LayoutInflater.from(parent.context).inflate(
 			R.layout.recycler_recipe_manager,
 			parent,
-			false
-		)
+			false)
 		return ViewHolder(inflatedView)
 	}
 	override fun onBindViewHolder(holder: ViewHolder, position: Int) {

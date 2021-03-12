@@ -26,6 +26,7 @@
         android:id="@+id/tabsMS"
         android:layout_width="match_parent"
         android:layout_height="@dimen/tab_height_ms"
+        app:tabMinWidth="@dimen/tab_width_ms"
         app:layout_constraintTop_toBottomOf="@+id/recyclerMP"
         app:tabIndicatorHeight="0dp">
 
@@ -75,7 +76,7 @@
     <com.google.android.material.tabs.TabLayout
         android:id="@+id/tabsBLD"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="@dimen/tab_layout_height"
         app:tabMinWidth="@dimen/tab_width_bld"
         app:layout_constraintBottom_toBottomOf="parent"
         app:tabIndicatorFullWidth="true"

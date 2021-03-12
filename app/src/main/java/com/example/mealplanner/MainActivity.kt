@@ -176,7 +176,7 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 			override fun onClick(view: View, position: Int) {
 				fragmentTransaction(EditRecipeFragment(position,
 						false, true, false),
-						"savedRecipes")
+						"editRecipe")
 			}
 		}
 		val recLongClickListener = object : RecyclerLongClickListener {

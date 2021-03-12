@@ -47,7 +47,9 @@ const val SRP_INS_END = "</ol>\""
 const val SRP_INS2_START = "<li>"
 const val SRP_INS2_END = "</li>"
 
-fun getRecipeFromHTML(url: String, pos: Int): Int {
+class RecipeAndReturn(val name: String, val ingredients: String, val instructions: String, val returnCode: Int)
+
+fun getRecipeFromURL(url: String): RecipeAndReturn {
 	var urlPassed = false
 	lateinit var reader: BufferedReader
 	lateinit var input: InputStream
@@ -60,7 +62,7 @@ fun getRecipeFromHTML(url: String, pos: Int): Int {
 		testUrl2 = testUrl2.substringAfterLast(".")
 		if (testUrl2.length <= 1 || testUrl2.length >= 5) {
 			println("Invalid URL; terminating program")
-			return 1   // invalid URL ending address
+			return RecipeAndReturn("", "", "", 1)   // invalid URL ending address
 		}
 
 		val sslContext: SSLContext = SSLContext.getInstance("TLSv1.2")
@@ -71,10 +73,10 @@ fun getRecipeFromHTML(url: String, pos: Int): Int {
 			connection = URL(testUrl).openConnection() as HttpsURLConnection
 		} catch (e: MalformedURLException) {
 			print("MalformedURL: $e")
-			return 1
+			return RecipeAndReturn("", "", "", 1)
 		} catch (e: IOException) {
 			print("IO error: $e")
-			return 2
+			return RecipeAndReturn("", "", "", 2)
 		}
 		connection.sslSocketFactory = socketFactory
 		connection.setRequestProperty(
@@ -86,7 +88,7 @@ fun getRecipeFromHTML(url: String, pos: Int): Int {
 			connection.connect()
 		} catch (e: UnknownHostException) {
 			println("Error: $e")
-			continue
+			return RecipeAndReturn("", "", "", 3)
 		}
 
 		try {
@@ -94,7 +96,7 @@ fun getRecipeFromHTML(url: String, pos: Int): Int {
 		} catch (e: IOException) {
 			println("Error: $e")
 			println("Could not get recipe from URL")
-			return 2
+			return RecipeAndReturn("", "", "", 2)
 		}
 		reader = BufferedReader(InputStreamReader(input))
 		urlPassed = true
@@ -208,7 +210,7 @@ fun getRecipeFromHTML(url: String, pos: Int): Int {
 					line = line.substringAfter(SRP_INS_START).substringBefore(SRP_INS_END)
 
 					while (line!!.contains(SRP_INS2_START)) {
-						var instLine = line.substringAfter(SRP_INS2_START).substringBefore(SRP_INS2_END)
+						val instLine = line.substringAfter(SRP_INS2_START).substringBefore(SRP_INS2_END)
 						if (instLine != instructions.trim().substringAfterLast("\n")) {
 							instructions += instLine + "\n\n"
 						}
@@ -233,61 +235,55 @@ fun getRecipeFromHTML(url: String, pos: Int): Int {
 	}
 	name = name.replace("&amp;", "&")
 
+	if (ingredients == "" && instructions == "")
+		return RecipeAndReturn("", "", "", 99)
+
 	val regex = "<[^>]*>".toRegex()
 	instructions = instructions.replace(regex, "")
 	ingredients = ingredients.replace(regex, "")
 	// replace characters for ingredients
-	ingredients = ingredients.replace("\\u2014", "-")
-	ingredients = ingredients.replace("\\u2153", "⅓")
-	ingredients = ingredients.replace("\\u2155", "⅕")
-	ingredients = ingredients.replace("\\u00bc", "¼")
-	ingredients = ingredients.replace("\\u00bd", "½")
-	ingredients = ingredients.replace("\\u00be", "¾")
-	ingredients = ingredients.replace("\\u00b0", "º")
-	ingredients = ingredients.replace("\\u2109", "º")
-	ingredients = ingredients.replace("\\u00a0", "")
-	ingredients = ingredients.replace("\\u00ae", "")
-	ingredients = ingredients.replace("&amp;", "&")
-	ingredients = ingredients.replace("&#039;", "'")
-	ingredients = ingredients.replace("&#8220;", "\"")
-	ingredients = ingredients.replace("&#8221;", "\"")
-	ingredients = ingredients.replace("\\u00f1", "ñ")
-	ingredients = ingredients.replace("&#8211;", "-")
-	ingredients = ingredients.replace("\\/", "/")
-	ingredients = ingredients.replace("\\r", "")
-	ingredients = ingredients.replace("\\n", "")
+	for (x in Replacements.item.indices step 2) {
+		ingredients = ingredients.replace(Replacements.item[x], Replacements.item[x+1])
+		instructions = instructions.replace(Replacements.item[x], Replacements.item[x+1])
+	}
 	ingredients = ingredients.trimEnd()
-	// replace characters for instructions
-	instructions = instructions.replace("&#039;", "'")
-	instructions = instructions.replace("&#215;", "×")
-	instructions = instructions.replace("&#x27;", "'")
-	instructions = instructions.replace("&#8220;", "\"")
-	instructions = instructions.replace("&#8221;", "\"")
-	instructions = instructions.replace("&quot;", "\"")
-	instructions = instructions.replace("&#8217;", "'")
-	instructions = instructions.replace("&amp;", "&")
-	instructions = instructions.replace("&nbsp;", "")
-	instructions = instructions.replace("\\u00a0", "")
-	instructions = instructions.replace("\\u00ba", "º")
-	instructions = instructions.replace("\\u00b0", "º")
-	instructions = instructions.replace("\\u2109", "º")
-	instructions = instructions.replace("\\u2019", "'")
-	instructions = instructions.replace("\\u00e9", "é")
-	instructions = instructions.replace("\\u201d", "\"")
-	instructions = instructions.replace("\\/", "/")
-	instructions = instructions.replace("\\\"", "\"")
 	instructions = instructions.trimEnd()
-	/*
-	println(name)
-	println("Ingredients:")
-	println(ingredients)
-	println("Instructions:")
-	println(instructions) */
-	if (ingredients == "" && instructions == "")
-		return 3
+
 	if (name.length > MAX_RECIPE_TITLE_SIZE)
 		name = name.dropLast(name.length - MAX_RECIPE_TITLE_SIZE)
 
-	masterRecipeList.recipe[pos] = RecipeX(name, ingredients, instructions, 0, true)
-	return 0
-} // TODO: Keep working on error handling
+	return RecipeAndReturn(name, ingredients, instructions, 0)
+}
+object Replacements {
+	val item = listOf(
+		"\\u2014", "-",
+		"\\u2153", "⅓",
+		"\\u2155", "⅕",
+		"\\u00bc", "¼",
+		"\\u00bd", "½",
+		"\\u00be", "¾",
+		"\\u00ba", "º",
+		"\\u00b0", "º",
+		"\\u2109", "º",
+		"\\u00a0", "",
+		"\\u00ae", "",
+		"&amp;", "&",
+		"&#039;", "'",
+		"&#8220;", "\"",
+		"&#8221;", "\"",
+		"\\u00f1", "ñ",
+		"&#8211;", "-",
+		"\\/", "/",
+		"\\r", "",
+		"\\n", "",
+		"&#215;", "×",
+		"&#x27;", "'",
+		"&quot;", "\"",
+		"&#8217;", "'",
+		"&nbsp;", "",
+		"\\u00a0", "",
+		"\\u2019", "'",
+		"\\u00e9", "é",
+		"\\u201d", "\"",
+		"\\\"", "\"")
+}

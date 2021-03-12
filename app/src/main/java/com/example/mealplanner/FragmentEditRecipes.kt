@@ -15,7 +15,7 @@ import java.util.*
 class EditRecipeFragment(position: Int,
                          private val editMaster: Boolean,
                          private val launchedFromMainActivity: Boolean,
-                         private val preAddedNew: Boolean): Fragment(R.layout.fragment_edit_recipes) {
+						 private val deleteOnCancel: Boolean): Fragment(R.layout.fragment_edit_recipes) {
 	private var _binding: FragmentEditRecipesBinding? = null
 	private var pos = position
 	private lateinit var updateMainRec: ActivityInterface
@@ -98,33 +98,38 @@ class EditRecipeFragment(position: Int,
 		}
 		// END Click listeners for Checkboxes and Radio Buttons
 		binding.btnCancel.setOnClickListener {
-			if (preAddedNew)    // if it was added new, but we're canceling, we need to delete
-				masterRecipeList.recipe.removeLast()
+			if (deleteOnCancel)
+				masterRecipeList.recipe.removeAt(pos)
 			exitEditRecipes()
 		}
 		binding.btnSave.setOnClickListener {
-			if (cat in 1..7) {
-				var name = binding.etTitle.text.toString().capitalize(Locale.ENGLISH)
-				if (name.length > MAX_RECIPE_TITLE_SIZE)
-					name = name.dropLast(name.length - MAX_RECIPE_TITLE_SIZE)
-				editList.recipe[pos].name = name
-				editList.recipe[pos].ingredients = binding.etRecipe.text.toString()
-				editList.recipe[pos].instructions = binding.etInstructions.text.toString()
-				editList.recipe[pos].cat = cat
-
-				masterRecipeList.recipe.sortBy { it.toString() }
-				requireContext().openFileOutput(DEFAULT_RECIPE_FILE, Context.MODE_PRIVATE).use {
-					val jsonToFile = Json.encodeToString(masterRecipeList)
-					// even though recipeList may have been updated, we still always
-					// save the master because that has every recipe from recipeList
-					it.write(jsonToFile.toByteArray())
-				}
-				exitEditRecipes()
-			}
-			else {
+			var name = binding.etTitle.text.toString().capitalize(Locale.ENGLISH)
+			if (name == "") {
 				val snackBar = Snackbar
-						.make(binding.cb1, getString(R.string.warn_noCat), Snackbar.LENGTH_LONG)
+						.make(binding.etTitle, getString(R.string.warn_noTitle), Snackbar.LENGTH_LONG)
 				snackBar.show()
+			} else {
+				if (cat in 1..7) {
+					if (name.length > MAX_RECIPE_TITLE_SIZE)
+						name = name.dropLast(name.length - MAX_RECIPE_TITLE_SIZE)
+					editList.recipe[pos].name = name
+					editList.recipe[pos].ingredients = binding.etRecipe.text.toString()
+					editList.recipe[pos].instructions = binding.etInstructions.text.toString()
+					editList.recipe[pos].cat = cat
+
+					masterRecipeList.recipe.sortBy { it.toString() }
+					requireContext().openFileOutput(DEFAULT_RECIPE_FILE, Context.MODE_PRIVATE).use {
+						val jsonToFile = Json.encodeToString(masterRecipeList)
+						// even though recipeList may have been updated, we still always
+						// save the master because that has every recipe from recipeList
+						it.write(jsonToFile.toByteArray())
+					}
+					exitEditRecipes()
+				} else {
+					val snackBar = Snackbar
+							.make(binding.cb1, getString(R.string.warn_noCat), Snackbar.LENGTH_LONG)
+					snackBar.show()
+				}
 			}
 		}
 	}
