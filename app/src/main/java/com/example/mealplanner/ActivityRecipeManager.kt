@@ -12,6 +12,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mealplanner.databinding.ActivityRecipeManagerBinding
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.util.*
 
 interface RecipeActivityInterface {
@@ -92,7 +95,7 @@ class RecipeManagerActivity : AppCompatActivity(), RecipeActivityInterface {
 			}
 			.setNegativeButton(R.string.str_cancel
 			) { dialog, _ ->
-				onDialogNegativeClick(dialog)
+				dialog.cancel()
 			}
 		builder.create()
 		builder.show()
@@ -116,20 +119,25 @@ class RecipeManagerActivity : AppCompatActivity(), RecipeActivityInterface {
 		builder.show()
 	}
 	private fun onDialogPositiveClick(dialog: DialogInterface, url: String) {
-		dialog.dismiss()
-		val recipeAndReturn = getRecipeFromURL(url)
-		if (recipeAndReturn.returnCode != 0)
-			showErrorDialog(recipeAndReturn.returnCode)
-		else {
-			masterRecipeList.recipe.add(RecipeX(recipeAndReturn.name,
-					recipeAndReturn.ingredients,
-					recipeAndReturn.instructions,
-					0, true))
-			loadEditRecipe(masterRecipeList.recipe.size - 1, true) // the position is the new size - 1
+		_binding!!.progressBar.visibility = View.VISIBLE
+		GlobalScope.launch(Dispatchers.IO) {
+			val recipeAndReturn = getRecipeFromURL(url)
+			runOnUiThread {
+				if (recipeAndReturn.returnCode != 0) {
+					dialog.dismiss()
+					_binding!!.progressBar.visibility = View.INVISIBLE
+					showErrorDialog(recipeAndReturn.returnCode)
+				} else {
+					dialog.dismiss()
+					_binding!!.progressBar.visibility = View.INVISIBLE
+					masterRecipeList.recipe.add(RecipeX(recipeAndReturn.name,
+							recipeAndReturn.ingredients,
+							recipeAndReturn.instructions,
+							0, true))
+					loadEditRecipe(masterRecipeList.recipe.size - 1, true) // the position is the new size - 1
+				}
+			}
 		}
-	}
-	private fun onDialogNegativeClick(dialog: DialogInterface) {
-		dialog.cancel()
 	}
 	override fun updateRecycler() {
 		_binding!!.recyclerRM.adapter!!.notifyDataSetChanged()

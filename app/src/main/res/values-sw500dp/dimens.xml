@@ -6,7 +6,7 @@
     <dimen name="text_size_recipe">30sp</dimen>
     <dimen name="recycler_width">140dp</dimen>
     <dimen name="tab_layout_height">64dp</dimen>
-    <dimen name="tab_width_bld">200dp</dimen>
+    <dimen name="tab_width_bld">150dp</dimen>
     <dimen name="tab_width_ms">200dp</dimen>
     <dimen name="tab_height_ms">50dp</dimen>
 </resources>

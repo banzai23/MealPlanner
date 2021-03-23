@@ -56,13 +56,16 @@ class CalendarFragment : Fragment(R.layout.fragment_calendar) {
 					masterMealPlanList.breakfast.clear()
 					masterMealPlanList.lunch.clear()
 					masterMealPlanList.dinner.clear()
+					masterMealPlanList.snack.clear()
 					for (x in 0 until 7) {
-						val addBreak = RecipeX(DEFAULT_EMPTY_RECIPE, "", "", 1, true)
+						val addBreak = RecipeX(DEFAULT_EMPTY_RECIPE, "", "", BREAKFAST_CAT, true)
 						masterMealPlanList.breakfast.add(x, addBreak)
-						val addLunch = RecipeX(DEFAULT_EMPTY_RECIPE, "", "", 2, true)
+						val addLunch = RecipeX(DEFAULT_EMPTY_RECIPE, "", "", LUNCH_CAT, true)
 						masterMealPlanList.lunch.add(x, addLunch)
-						val addDinner = RecipeX(DEFAULT_EMPTY_RECIPE, "", "", 4, true)
+						val addDinner = RecipeX(DEFAULT_EMPTY_RECIPE, "", "", DINNER_CAT, true)
 						masterMealPlanList.dinner.add(x, addDinner)
+						val addSnack = RecipeX(DEFAULT_EMPTY_RECIPE, "", "", SNACK_CAT, true)
+						masterMealPlanList.snack.add(x, addSnack)
 					}
 				}
 
@@ -70,12 +73,14 @@ class CalendarFragment : Fragment(R.layout.fragment_calendar) {
 				mealPlanList.recipe = masterMealPlanList.breakfast
 			else if (mealPlan.mode == LUNCH_CAT)
 				mealPlanList.recipe = masterMealPlanList.lunch
-			else
+			else if (mealPlan.mode == DINNER_CAT)
 				mealPlanList.recipe = masterMealPlanList.dinner
+			else
+				mealPlanList.recipe = masterMealPlanList.snack
 
 			// done loading, now update recyclers
-			updateAct.updateRecyclerDate(true, selectedDateToSunday)
-			updateAct.updateRecyclerMP(true)
+			updateAct.updateRecyclerDate(false, selectedDateToSunday) // can't set to true because dataSet
+			updateAct.updateRecyclerMP(false)// often gets changed from here, FragmentCalendar
 
 			updateAct.saveDefaultFiles()
 			requireActivity().supportFragmentManager.popBackStack()

@@ -20,10 +20,14 @@ import kotlinx.serialization.json.Json
 import java.io.FileNotFoundException
 import java.util.*
 
+data class UndoList(val list: MutableList<UndoListX>)
+data class UndoListX(val text: String, val position: Int)
+
 class ShoppingListActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
 	private var _binding: ActivityShoppingListBinding? = null
 	lateinit var listClickListener: RecyclerClickListener
 	var allIngredients: MutableList<String> = mutableListOf()
+	val undo: UndoList = UndoList(mutableListOf())
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
@@ -51,6 +55,17 @@ class ShoppingListActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListe
 		setTouch.attachToRecyclerView(binding.recyclerShoppingList)
 	}
 	override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
+		R.id.action_undo -> {
+			if (undo.list.size > 0) {
+				val lastPos = undo.list.size - 1
+				allIngredients.add(undo.list[lastPos].position, undo.list[lastPos].text)
+				undo.list.removeAt(lastPos)
+				_binding!!.recyclerShoppingList.adapter!!.notifyDataSetChanged()
+			} else {
+				Snackbar.make(_binding!!.toolbar, R.string.snackbar_undo, Snackbar.LENGTH_LONG).show()
+			}
+			true
+		}
 		R.id.action_item -> {
 			val builder = AlertDialog.Builder(this)
 			val editText = EditText(this)
@@ -157,6 +172,19 @@ class ShoppingListActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListe
 		totalSize = masterMealPlanList.dinner.size
 		for (x in 0 until totalSize) {
 			val split = masterMealPlanList.dinner[x].ingredients.split("\n")
+			for (y in split.indices) {
+				if (split[y].isEmpty()) {
+					// do nothing
+				}
+				else if (split[y][0].isDigit())
+					getAll.add(split[y].substringAfter(" ").substringBefore(","))
+				else
+					getAll.add(split[y].substringBefore(","))
+			}
+		}
+		totalSize = masterMealPlanList.snack.size
+		for (x in 0 until totalSize) {
+			val split = masterMealPlanList.snack[x].ingredients.split("\n")
 			for (y in split.indices) {
 				if (split[y].isEmpty()) {
 					// do nothing
@@ -315,6 +343,7 @@ class ShoppingListActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListe
 			}
 			override fun onSwiped(viewHolder: RecyclerView.ViewHolder, swipeDir: Int) {
 				val pos = viewHolder.adapterPosition
+				undo.list.add(UndoListX(allIngredients[pos], pos))
 				allIngredients.removeAt(pos)
 				recycler.adapter!!.notifyItemRemoved(pos)
 			}

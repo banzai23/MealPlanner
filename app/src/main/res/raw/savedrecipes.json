@@ -1,109 +1,95 @@
 {
-	"recipe": [
+  "recipe": [
 	{
-		"name": "Peanut Butter Jelly",
-		"ingredients": "1 peanut\n2 jelly",
-	  	"instructions": "",
-		"cat": 2,
-	  	"isMeal": true
+	  "name": "Amaranth Porridge",
+	  "ingredients": "180g amaranth (rinsed, approx. 1 cup)\n480ml skimmed/semi-skimmed/light milk (or dairy free alternative, use more if required)\n⅕ tsp fine sea salt",
+	  "instructions": "Place the amaranth in a medium saucepan, add half the milk and the salt. Bring to the boil stirring frequently.\n\nOnce it starts bubbling up turn the heat down to a simmer and continue cooking until most of the liquid has been absorbed stirring frequently. This will take 10-15 minutes.\n\nAdd most of the remaining liquid and continue cooking for another 15 minutes or so until the porridge thickens further and the amaranth is fully cooked. Top up with more milk if needed. Remove from the heat and serve immediately.",
+	  "cat": 7,
+	  "isMeal": true
 	},
 	{
-		"name": "Chicken",
-		"ingredients": "1 chicken",
-	 	"instructions": "",
-		"cat": 4,
-	  	"isMeal": true
+	  "name": "Chicken Tacos with Pineapple Salsa",
+	  "ingredients": "1 ½ pounds chicken breast\n8  tortillas (flour or corn, 6-inch)\n¾ teaspoon smoked paprika\n1 teaspoon chili powder\n1 ½ teaspoons ground cumin\n½ teaspoon onion powder\n½ teaspoon garlic powder\n¾ teaspoon kosher salt\n½ teaspoon black pepper\n¼ teaspoon oregano (dried)\n¼ teaspoon cayenne pepper (ground)\n1 teaspoon honey\n2 tablespoons lime juice (plus zest of 1 lime)\n2 tablespoons olive oil\n1 cup pineapple (diced, ¼-inch)\n1 cup tomato (diced, ¼-inch)\n¼ cup red onion (finely diced)\n2 teaspoons jalapeño (minced)\n2 tablespoons lime juice (plus zest of 1 lime)\n½ cup cilantro (chopped)",
+	  "instructions": "Thinly sliced or pound out the chicken to ½-inch thickness. Add it to a large resealable plastic bag.\n\nWhisk all marinade ingredients together in a bowl, and then pour into the plastic bag.\n\nCoat the chicken evenly with the marinade. Press out as much air as possible and seal.\n\nAllow it to marinate at room temperature for 20 minutes or up to 1 hour (refrigerate after 1 hour), or marinate refrigerated overnight (1-day max).\n\nStir all salsa ingredients in a bowl, cover and refrigerate until ready to serve.\n\nHeat a large nonstick skillet over medium-high heat.\n\nAdd chicken to the hot pan, cook for 5 minutes without moving.\n\nFlip the chicken over, lower the heat to medium, and cook 4 to 6 minutes or until no longer pink when the internal temperature reaches 165ºF.\n\nMove chicken to a cutting board and allow it to rest for 5 minutes.\n\nHeat tortillas in a pan to warm.\n\nThinly slice chicken lengthwise into long strips.\n\nFill tortillas with chicken, salsa and any additional topping. Serve with lime wedges if desired.",
+	  "cat": 7,
+	  "isMeal": true
 	},
 	{
-		"name": "Mashed Potatoes",
-		"ingredients": "2 potatoes",
-	  	"instructions": "",
-		"cat": 4,
-	  	"isMeal": false
+	  "name": "Cucumber Bruschetta ",
+	  "ingredients": "1  tomato (diced)\n1  english cucumber (diced)\n1 clove garlic (minced)\n3 tablespoons fresh basil (chopped)\n1 tablespoon olive oil\n2 teaspoons red wine vinegar\nsalt and pepper to taste\n1  baguette\nolive oil\n1 clove garlic",
+	  "instructions": "Add all topping ingredients in a bowl and gently toss to combine.\n\nSlice baguette into ¾\" slices and brush the top of each slice with olive oil.\n\nBroil 2-3 minutes or until lightly toasted. Remove from the oven and rub each slice of bread with the fresh clove of garlic.\n\nSpoon the cucumber mixture over the bread to serve.",
+	  "cat": 7,
+	  "isMeal": true
 	},
 	{
-		"name": "Quinoa Salad",
-		"ingredients": "quinoa salad duh",
-	  	"instructions": "",
-		"cat": 6,
-	  	"isMeal": false
+	  "name": "Garlic-Ranch Chicken Pizza {Hell",
+	  "ingredients": "Dough for 1 large pizza\n2 cups Mozzarella cheese (shredded)\n1/2 cup bacon (cooked and crumbled)\n1 cup chicken (cooked and shredded)\n2   tomatoes (thinly sliced)\nFor the Garlic-Ranch Sauce:\n2 Tbsp sour cream\n3 Tbsp mayonnaise\n2 1/2 Tbsp milk\n1/2 teaspoon garlic salt\n1/8 teaspoon chopped (dried chives)\n1/8 teaspoon dill\n1/8 teaspoon dried parsley\ndash of onion powder\nSalt and pepper (to taste)",
+	  "instructions": "Mix all ingredients together for the garlic-ranch sauce. Spread mixture over the top of the pizza dough. Sprinkle 1 cup of the mozzarella cheese over top, followed by the chicken, bacon, and tomatoes. Sprinkle remaining cheese on top. Bake at 450ºF for 10-12 minutes, or until crust is golden brown and cheese is bubbly.\n\n*For grilled pizzas: Oil your grill and turn heat to medium-low. Shape dough into long, slipper-shaped pieces. Brush dough with olive oil and grill for 2 minutes on one side, with the grill cover on. Flip to the other side and brush again with olive oil. Cook for 2 minutes, with the grill lid on. Remove crust to a plate and add toppings. Return to grill and cook just until cheese is melted, 1-2 more minutes.",
+	  "cat": 7,
+	  "isMeal": true
 	},
 	{
-		"name": "Tacos",
-		"ingredients": "1 taco\n2 beef",
-		"instructions": "",
-	  	"cat": 6,
-	  	"isMeal": true
+	  "name": "Hemp Granola (Protein-Packed + G",
+	  "ingredients": "3/4 cup raw almonds\n1/2 cup raw pumpkin seeds (pepitas)\n1/2 cup raw pecans\n1 cup raw walnuts\n1 cup unsweetened coconut (desiccated, shredded or flakes)\n1 cup Manitoba Harvest Hemp Hearts\n2 Tablespoons chia seeds\n1/3 cup melted coconut oil\n1 teaspoon vanilla\n1 teaspoon cinnamon\n1/4 cup maple syrup\npinch of sea salt\n1/2 cup pitted and chopped Medjool dates",
+	  "instructions": "Preheat oven to 250ºF. Place almonds, pumpkin seeds, pecans and walnuts into a food processor and pulse a few times to chop the nuts and seeds into smaller pieces. Don't process too much because you still want some chunky pieces.\n\nTransfer the nut mixture into a large bowl, add all remaining ingredients except the dates and stir well. Spread an even layer of the mixture onto a large parchment-lined baking sheet. You may need two sheets if you're baking sheets aren't oversized like mine.\n\nBake for 35 minutes. Remove from oven, add dates and give the mix a good stir. Bake for 25-30 minutes more or until granola is golden brown in color. Remove from oven, let cool and enjoy. It will get crunchier as it cools. I recommend storing any leftovers in a Mason/Weck jar in the fridge. It will stay extra crunchy this way.",
+	  "cat": 7,
+	  "isMeal": true
 	},
 	{
-		"name": "Baked Potatoes",
-		"ingredients": "Potatoes",
-		"instructions": "",
-	  	"cat": 4,
-	  	"isMeal": false
+	  "name": "Pineapple Chicken ",
+	  "ingredients": "1 and 1/2 pounds boneless skinless chicken breasts ((or thighs))\n1/4 cup olive oil\n1/4 cup freshly squeezed lime juice (+ 1 teaspoon lime zest)\n2 teaspoons minced garlic\n2 teaspoons honey\n2 and 1/2 teaspoons ground cumin\n1 teaspoon ground coriander\nfine sea salt and freshly cracked pepper\nvegetable oil (for greasing grill/grill pan)\n3 cups diced pineapple ((~18 ounces/most of 1 pineapple; Note 1))\n1 cup loosely packed cilantro (diced (measure loosely packed and then finely dice))\n2 tablespoons finely diced jalapeno\n1/2 cup diced red onion\n2 tablespoons freshly squeezed lime juice\n1/4 teaspoon ground cumin\n1 large avocado (finely sliced or diced (Note 2))\nOptional: serve over rice or quinoa ((we like to make coconut or cilantro lime rice for this dish; check blogpost for recipe links))",
+	  "instructions": "Trim the chicken breasts of fat and then slice large breasts evenly in half, widthwise. Using a meat mallet or the bottom of your fry pan, pound breasts to even thickness (you don't want the meat super-flat, just even in thickness). Place the prepared chicken in a large sealable plastic bag and set aside.\n\nIn a small bowl, whisk together 1/4 cup olive oil, 1 teaspoon lime zest, 1/4 cup freshly squeezed lime juice, minced garlic, honey, cumin, coriander, and salt and pepper (I use about 1/2 teaspoon of each; add to your preference). Once the mixture is well combined, remove 3 tablespoons of the mixture and reserve for later.\n\nAdd the rest of the marinade to the bag with the chicken. Seal the bag and then knead with your hands to ensure all of the chicken is well coated. Place in the fridge and marinate for at least 30 minutes and preferably 2-3 hours. Don't marinate longer than 6 hours. (Acid from lime begins to \"cook\" the chicken.)\n\nPreheat a grill or grill pan to medium-high heat (about 400 degrees F.). Generously oil the grill (I drench a roll-up paper towel in vegetable oil and, holding it with tongs, rub it over the grill grates. Don't skip this step.) Start by grilling the pineapple (See Note 1) so you can work on the salsa while the chicken cooks. Rub about 1-2 teaspoons vegetable oil over all sides of the pineapple. Cook for about 2-3 minutes per side or until lightly charred (or grilled to your liking). Remove to a plate to allow to slightly cool before dicing.\n\nRemove chicken from marinade and discard any remaining marinade. Grill the chicken, turning halfway through grilling, about 4-6 minutes per side (until the thickest part of the chicken registers 165 degrees F and juices run clear). Baste the chicken with the reserved marinade as you grill and after flipping. Transfer the chicken to a plate and cover with foil, so the juices can re-distribute. Slice thinly or chop into bite-sized pieces.\n\nWhile the chicken cooks, prepare the salsa. Dice the pineapple, cilantro,  jalapeno, and red onion. Toss everything together in a large bowl with the freshly squeezed lime juice, cumin, and salt and pepper to taste. I add about 1/4 teaspoon of salt and 1/8 teaspoon pepper, but add to preference. Gently toss together, taste, and then adjust seasoning if needed. Serve spooned generously over the grilled chicken.\n\nWe like to serve Pineapple Chicken with coconut rice or cilantro-lime rice. If you'd like those recipes, check for the links to those recipes right above this recipe card!",
+	  "cat": 7,
+	  "isMeal": true
 	},
 	{
-		"name": "Hamburgers",
-		"ingredients": "Beef N Cheese",
-	 	"instructions": "",
-	  	"cat": 4,
-	  	"isMeal": true
+	  "name": "Quick and Easy Taco Soup Recipe",
+	  "ingredients": "1 lb. ground beef\n1  onion (chopped)\n15 oz kidney beans\n15 oz black beans\n15 oz corn kernels\n15 oz diced tomatoes\n8 oz tomato sauce\n1  pouch (2 tbsp taco seasoning (homemade recipe here))\nshredded cheddar cheese\nsour cream\ndiced tomatoes\navocado\ncorn chips\nlime wedges\ncilantro",
+	  "instructions": "Brown the ground beef and onion in a large pot, until cooked through and crumbled. Drain any excess fat.\n\nAdd the remaining ingredients to the pot and stir to combine. Cook over medium heat, letting simmer for about 10 minutes to let flavors blend.\n\nServe with optional taco toppings. Enjoy!",
+	  "cat": 7,
+	  "isMeal": true
 	},
 	{
-		"name": "Hot Dogs",
-		"ingredients": "Hot Dogs",
-	  	"instructions": "",
-	  	"cat": 6,
-	  	"isMeal": true
+	  "name": "Quick Teriyaki Chicken Rice Bowls Recipe",
+	  "ingredients": "1 lb boneless (skinless chicken breast, cut into bite size pieces)\nsalt and pepper\n1/4 cup packed light brown sugar\n1/4 cup low-sodium soy sauce\n2 Tablespoons rice or apple cider vinegar\n1/2 teaspoon ground ginger\n2 cloves garlic (minced)\n1 Tablespoon cornstarch\nrice\nsteamed broccoli",
+	  "instructions": "Cook rice according to instructions on packaging.\n\nSteam broccoli.\n\nSeason chicken pieces with salt and pepper and place in large non stick skillet.\n\nCook until done, stirring often.\n\nIn a small bowl or a measuring cup, combine brown sugar, soy sauce, ginger, garlic, vinegar and cornstarch. Whisk together until there are no cornstarch lumps. Add sauce to chicken and cook stirring constantly, until it thickens into shiny glaze.\n\nRemove from heat and serve immediately with rice and steamed broccoli.",
+	  "cat": 7,
+	  "isMeal": true
 	},
 	{
-		"name": "Breakfast",
-		"ingredients": "Eggs and Sausage",
-	  	"instructions": "",
-	  	"cat": 1,
-	  	"isMeal": true
+	  "name": "Roasted Herb Red Potatoes",
+	  "ingredients": "3 pounds baby red bliss potatoes (washed and halved (quartered if potatoes are on the medium/large side))\n3 Tablespoons olive oil\n6 cloves of garlic (minced)\n1 teaspoon salt\n1 teaspoon dried thyme\n1/2 teaspoon black pepper\n1/2 teaspoon dried oregano\n1/2 teaspoon dried basil\n1/2 cup grated Parmesan cheese\n3 Tablespoons fresh parsley (finely chopped)",
+	  "instructions": "Preheat the oven to 400ºF. Grease a large baking sheet with non-stick spray or olive oil. Set aside.\n\nIn a large bowl, toss together all of the ingredients except the parsley until potatoes are evenly coated. Pour coated potatoes onto prepared baking sheet, spreading them out as evenly as possible.\n\nBake for 45-55 minutes, turning every 15 minutes with a spatula, until browned and crisp. Sprinkle with fresh parsley before serving. Potatoes are best served immediately, but will stay fresh in an airtight container in the refrigerator up to 3 days. Reheat in the microwave as needed, or reheat on baking sheet or large casserole dish, covered, in a 300ºF oven for 10-15 minutes or until heated through.",
+	  "cat": 7,
+	  "isMeal": true
 	},
 	{
-		"name": "Taco Soup",
-		"ingredients": "1 can Kcatney beans\n1 can Black beans",
-	  	"instructions": "",
-	  	"cat": 6,
-	 	"isMeal": true
+	  "name": "Sheet Pan Chicken Fajitas (Oven ",
+	  "ingredients": "1 1/2 lbs boneless skinless chicken breasts (or boneless skinless chicken thighs)\n3  bell peppers (red, yellow or green, seeds removed)\n1 medium onion\n1 tsp cumin powder\n1 1/2 tsp chili powder\n1 tsp garlic powder (or minced garlic)\n2 tsp paprika\nsalt and pepper to taste\n1 tbsp vegetable oil\n8  flour tortillas (8 inch size)\nlime (wedges)\nfresh cilantro (chopped)\nsour cream\navocado",
+	  "instructions": "Preheat oven to 400ºF. Set aside a large baking sheet.\n\nPlace the onions and bell peppers on a work surface and slice into 1/2-inch wide pieces. Next, cut the chicken into 1/2-inch wide strips. Note: You may find it helpful to freeze the chicken for 30 minutes to firm the meat up for easier slicing.\n\nScatter the chicken, peppers, onions and peppers evenly across the baking sheet.Sprinkle cumin, chili powder, garlic, paprika, salt and pepper on top and drizzle with oil.\n\nUsing tongs or two spoons, toss all ingredients on the pan to coat evenly.\n\nBake for 15 minutes.\n\nRemove from oven, and use tongs stir chicken and vegetables. Then slide them one-quarter of the way over, to make space for tortillas.\n\nMop up excess juices with a paper towel, and then add the tortillas to the pan. Return to the oven and bake for 5 more minutes.\n\nRemove from oven and squeeze optional fresh lime on top. Serve in tortillas with optional cilantro, sour cream and avocado.",
+	  "cat": 7,
+	  "isMeal": true
 	},
 	{
-		"name": "Caesar Salad",
-		"ingredients": "Romaine and Caesar dressing",
-	  	"instructions": "",
-	  	"cat": 6,
-	  	"isMeal": false
+	  "name": "Spinach Pasta",
+	  "ingredients": "12 ounces gluten free pasta I used penne\n3 Tablespoons vegan buttery spread\n3 cups vegan mozzarella shreds I used Daiya brand\n1 teaspoon garlic powder\n1 1/2 cups non-dairy milk\n1 teaspoon salt\n1/3 teaspoon pepper\n1 cup fresh spinach leaves",
+	  "instructions": "Cook the pasta according to package directions.\nWhile the pasta cooks, make the sauce. Melt the vegan buttery spread in a large pot. Add the Daiya cheese mozzarella shreds, salt, pepper, garlic powder, and non-dairy milk. Cook over medium heat, stirring often.\nOnce the cheese is melted and the sauce is smooth, add the spinach. Stir until the spinach wilts.\nRemove the pan from the heat and blend the sauce using an immersion blender.\nAdd the cooked and drained pasta to the cheesy sauce. Stir well to coat. Season with more salt and pepper if desired. Serve immediately.\n\n",
+	  "cat": 7,
+	  "isMeal": true
 	},
 	{
-		"name": "Steak and Potatoes",
-		"ingredients": "1 steak\n2 potatoes",
-	  	"instructions": "",
-	  	"cat": 4,
-	  	"isMeal": true
+	  "name": "The Best Rosemary Potatoes (Cris",
+	  "ingredients": "2 pounds Yukon Gold potatoes, cut into 1/2\" cubes\n1/4 cup extra virgin olive oil\n1 teaspoon sea salt, or to taste\n1 tablespoon coarsely chopped fresh rosemary",
+	  "instructions": "Preheat a 8-10\" cast iron skillet over medium high heat.\n\nWhen the pan is hot, add the olive oil and swirl to coat the bottom of the pan. Add the potatoes and half the chopped rosemary in the skillet. I add the sea salt in at this time, but you can season to taste at the end if you think you may use less.\n\nCook over medium high heat for about 15 minutes. Use a metal spatula to mix in the rosemary and sea salt if you're adding it at this point. Then stir to flip the potatoes only when the bottom layer turns brown and crispy.\n\nAfter about 15 minutes, turn the heat down to medium. If the pan starts to get too hot before the 15 minutes is up, turn the heat down sooner.\n\nAdd the rest of the rosemary and continue to cook over medium heat. Continue to turn over the potatoes when brown edges appear on the bottom layer.\n\nCook until the potatoes are tender with crispy brown edges, 10 more minutes.\n\nSeason to taste with sea salt, and serve immediately.",
+	  "cat": 7,
+	  "isMeal": true
 	},
 	{
-		"name": "Soup, Salad, and Breadsticks",
-		"ingredients": "1 tsp SSB",
-	  	"instructions": "",
-	  	"cat": 6,
-	  	"isMeal": true
-	},
-	{
-		"name": "Bacon, Lettuce, Tomato",
-		"ingredients": "Bacon, Lettuce, Tomatoes",
-	  	"instructions": "",
-	  	"cat": 2,
-	  	"isMeal": true
-	},
-	{
-		"name": "Cilantro Kale Advocado",
-		"ingredients": "Cilantro\nKale\nAvocado",
-	  	"instructions": "",
-	  	"cat": 6,
-	  	"isMeal": false
+	  "name": "Veggie Fried Rice",
+	  "ingredients": "3 cups cooked white rice (leftover rice is perfect!)\n1 tablespoon vegetable oil (divided use)\n½ cup finely chopped onion\n½ cup chopped carrots\n½ cup chopped red bell pepper\n½ cup frozen peas\n2 teaspoons minced garlic\n2  eggs (lightly beaten)\n3 tablespoons soy sauce (or more to taste)\n1 tablespoon toasted sesame oil\nsalt and pepper to taste\noptional: sliced green onions for garnish",
+	  "instructions": "In a large wok or skillet, heat 2 teaspoons of the vegetable oil over medium high heat.\n\nAdd the onion and carrot to the pan, cook 3-5 minutes or until softened. Stir in the red bell pepper; cook 2-3 minutes more. Add the garlic and cook for 30 seconds.\n\nSeason to taste with salt and pepper. Remove the vegetables from the pan, place them on a plate and cover to keep warm.\n\nPour the remaining teaspoon of oil into the pan; add the eggs and cook, stirring occasionally and breaking up with a spatula until the eggs are scrambled and cooked through. Season with salt and pepper.\n\nAdd the rice, reserved cooked veggies and frozen peas to the pan. Stir in the soy sauce and sesame oil and mix gently until everything is thoroughly combined and warmed through, 3-4 minutes. Season to taste with salt and pepper, add more soy sauce if desired.\n\nServe immediately, sprinkled with sliced green onions if desired.",
+	  "cat": 7,
+	  "isMeal": true
 	}
-	]
+  ]
 }

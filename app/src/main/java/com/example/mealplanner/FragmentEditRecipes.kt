@@ -66,6 +66,12 @@ class EditRecipeFragment(position: Int,
 			binding.cb2.isChecked = true
 			binding.cb3.isChecked = true
 		}
+		if (cat == SNACK_CAT) {
+			binding.cb1.isChecked = false
+			binding.cb2.isChecked = false
+			binding.cb3.isChecked = false
+			binding.cb4.isChecked = true
+		}
 		// END Checkbox check for checks
 		// START Click listeners for Checkboxes
 		binding.cb1.setOnClickListener {
@@ -105,13 +111,13 @@ class EditRecipeFragment(position: Int,
 		binding.btnSave.setOnClickListener {
 			var name = binding.etTitle.text.toString().capitalize(Locale.ENGLISH)
 			if (name == "") {
-				val snackBar = Snackbar
-						.make(binding.etTitle, getString(R.string.warn_noTitle), Snackbar.LENGTH_LONG)
-				snackBar.show()
+				Snackbar.make(binding.etTitle, getString(R.string.warn_noTitle), Snackbar.LENGTH_LONG).show()
 			} else {
-				if (cat in 1..7) {
+				if (cat > 0) {
 					if (name.length > MAX_RECIPE_TITLE_SIZE)
 						name = name.dropLast(name.length - MAX_RECIPE_TITLE_SIZE)
+					if (cat > 10)
+						cat = 10
 					editList.recipe[pos].name = name
 					editList.recipe[pos].ingredients = binding.etRecipe.text.toString()
 					editList.recipe[pos].instructions = binding.etInstructions.text.toString()
@@ -126,9 +132,7 @@ class EditRecipeFragment(position: Int,
 					}
 					exitEditRecipes()
 				} else {
-					val snackBar = Snackbar
-							.make(binding.cb1, getString(R.string.warn_noCat), Snackbar.LENGTH_LONG)
-					snackBar.show()
+					Snackbar.make(binding.cb1, R.string.warn_noCat, Snackbar.LENGTH_LONG).show()
 				}
 			}
 		}

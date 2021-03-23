@@ -3,7 +3,6 @@ package com.example.mealplanner
 import android.app.AlertDialog
 import android.content.*
 import android.os.Bundle
-import android.os.StrictMode
 import android.view.*
 import android.widget.PopupMenu
 import android.widget.TextView
@@ -28,13 +27,14 @@ import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.*
 
-const val MAX_RECIPE_TITLE_SIZE = 32
+const val MAX_RECIPE_TITLE_SIZE = 40
 const val DEFAULT_RECIPE_FILE = "savedRecipes.json"
 const val DEFAULT_SHOPPING_LIST_FILE = "shoppingList.json"
 const val DEFAULT_EMPTY_RECIPE = "                               "
 const val BREAKFAST_CAT = 1
 const val LUNCH_CAT = 2
 const val DINNER_CAT = 4
+const val SNACK_CAT = 10
 
 lateinit var masterRecipeList: Recipe       // for storing every recipe
 lateinit var recipeList: Recipe             // for RecyclerRecipes
@@ -52,9 +52,10 @@ data class RecipeX(var name: String = "", var ingredients: String = "",
 data class MealPlan(var breakfast: MutableList<RecipeX>,
                     var lunch: MutableList<RecipeX>,
                     var dinner: MutableList<RecipeX>,
+                    var snack: MutableList<RecipeX>,
                     var startDate: Long)
 class MealPlanData {
-	var dateIterator = intArrayOf(0, 0, 0)  // Size-3 array for the 3 categories of Meals
+	var dateIterator = intArrayOf(0, 0, 0, 0)  // Size-4 array for the 4 categories of Meals
 	var mode = BREAKFAST_CAT            // defaults to viewing breakfast
 	var position: Int = 0               // easier way to hold position data, instead of passing
 	var isMealMode = true               // defaults to meals, not sides
@@ -87,19 +88,19 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 		}
 		// load asset
 		if (!assetsLoaded) {
-		//	this.deleteFile("8_2021")    // delete old files, for development
+		//	this.deleteFile("23_2021") // delete old files, for development
+
 			var inputStream: InputStream =
-			try {
-				this.openFileInput(DEFAULT_RECIPE_FILE) // load this file, if not found, load the resource
-			} catch (e: FileNotFoundException) {
-				this.resources.openRawResource(R.raw.savedrecipes)
-			}
+					try {
+						this.openFileInput(DEFAULT_RECIPE_FILE) // load this file, if not found, load the resource
+					} catch (e: FileNotFoundException) {
+						this.resources.openRawResource(R.raw.savedrecipes)
+					}
 			var inputString = inputStream.bufferedReader().readText()
 			if (inputString.isEmpty()) {
 				inputStream = this.resources.openRawResource(R.raw.savedrecipes)
 				inputString = inputStream.bufferedReader().readText()
-			}
-			else if (inputString[0] != '{') {
+			} else if (inputString[0] != '{') {
 				inputStream = this.resources.openRawResource(R.raw.savedrecipes)
 				inputString = inputStream.bufferedReader().readText()
 			}
@@ -108,7 +109,7 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 
 			recipeList = Recipe(mutableListOf())    // initializing recipeList
 			updateRecipeList(mealPlan.mode)         // recipeList points to the default category
-													// list in masterRecipeList
+			// list in masterRecipeList
 			val gc = GregorianCalendar()
 			try {
 				val filename: String = gc.get(Calendar.WEEK_OF_YEAR).toString() + "_" + gc.get(Calendar.YEAR).toString()
@@ -118,14 +119,16 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 			} catch (e: FileNotFoundException) {
 				while (gc.get(Calendar.DAY_OF_WEEK) != 1)
 					gc.roll(GregorianCalendar.DAY_OF_YEAR, false)
-				masterMealPlanList = MealPlan(mutableListOf(), mutableListOf(), mutableListOf(), gc.timeInMillis)
+				masterMealPlanList = MealPlan(mutableListOf(), mutableListOf(), mutableListOf(), mutableListOf(), gc.timeInMillis)
 				for (x in 0 until 7) {
-					val addBreak = RecipeX(DEFAULT_EMPTY_RECIPE, "", "", 1, true)
+					val addBreak = RecipeX(DEFAULT_EMPTY_RECIPE, "", "", BREAKFAST_CAT, true)
 					masterMealPlanList.breakfast.add(x, addBreak)
-					val addLunch = RecipeX(DEFAULT_EMPTY_RECIPE, "", "", 2, true)
+					val addLunch = RecipeX(DEFAULT_EMPTY_RECIPE, "", "", LUNCH_CAT, true)
 					masterMealPlanList.lunch.add(x, addLunch)
-					val addDinner = RecipeX(DEFAULT_EMPTY_RECIPE, "", "", 4, true)
+					val addDinner = RecipeX(DEFAULT_EMPTY_RECIPE, "", "", DINNER_CAT, true)
 					masterMealPlanList.dinner.add(x, addDinner)
+					val addSnack = RecipeX(DEFAULT_EMPTY_RECIPE, "", "", SNACK_CAT, true)
+					masterMealPlanList.snack.add(x, addSnack)
 				}
 			}
 
@@ -133,7 +136,8 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 			when (mealPlan.mode) {
 				BREAKFAST_CAT -> mealPlanList.recipe.addAll(masterMealPlanList.breakfast)
 				LUNCH_CAT -> mealPlanList.recipe.addAll(masterMealPlanList.lunch)
-				else -> mealPlanList.recipe.addAll(masterMealPlanList.dinner)
+				DINNER_CAT -> mealPlanList.recipe.addAll(masterMealPlanList.dinner)
+				else -> mealPlanList.recipe.addAll(masterMealPlanList.snack)
 			}
 			inputStream.close()
 			assetsLoaded = true
@@ -144,10 +148,6 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 		val binding = activityBinding.contentMain
 		setSupportActionBar(findViewById(R.id.toolbar))
 
-		val policy = StrictMode.ThreadPolicy.Builder().permitAll().build()
-		StrictMode.setThreadPolicy(policy)  // Allows for getting website from Internet Link
-											// so that it loads the website first instead of
-											// doing it on a different thread.
 		window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN)
 		// hide the Android keyboard, unless TextInputEditText clicked/focused on
 		// set the RecyclerDate
@@ -200,9 +200,13 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 						mealPlan.mode = LUNCH_CAT
 						mealPlanList.recipe = masterMealPlanList.lunch
 					}
-					else -> {
+					2 -> {
 						mealPlan.mode = DINNER_CAT
 						mealPlanList.recipe = masterMealPlanList.dinner
+					}
+					else -> {
+						mealPlan.mode = SNACK_CAT
+						mealPlanList.recipe = masterMealPlanList.snack
 					}
 				}
 
@@ -241,6 +245,7 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 			}
 		})
 	}
+
 	override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
 		R.id.action_new -> {
 			fragmentTransaction(CalendarFragment(), "calendar")
@@ -276,11 +281,13 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 			super.onOptionsItemSelected(item)
 		}
 	}
+
 	override fun onCreateOptionsMenu(menu: Menu): Boolean {
 		val inflater: MenuInflater = menuInflater
 		inflater.inflate(R.menu.menu_main, menu)
 		return true
 	}
+
 	private fun showExitDialog() {
 		saveDefaultFiles()
 
@@ -290,13 +297,14 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 		) { _, _ ->
 			finishAffinity()
 		}
-		.setNegativeButton(R.string.dialog_no
-		) { dialog, _ ->
-			dialog.dismiss()
-		}
+				.setNegativeButton(R.string.dialog_no
+				) { dialog, _ ->
+					dialog.dismiss()
+				}
 		builder.create()
 		builder.show()
 	}
+
 	private fun showPopup(v: View, pos: Int) {
 		PopupMenu(v.context, v).apply {
 			setOnMenuItemClickListener(this@MainActivity)
@@ -311,6 +319,7 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 			show()
 		}
 	}
+
 	override fun onMenuItemClick(item: MenuItem): Boolean {
 		return when (item.groupId) {
 			0 -> {
@@ -335,17 +344,20 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 			}
 		}
 	}
+
 	override fun onBackPressed() {
 		super.onBackPressed()
 		if (supportFragmentManager.backStackEntryCount > 0) {
 			supportFragmentManager.popBackStack()
 		}
 	}
+
 	override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
 		super.onActivityResult(requestCode, resultCode, data)
 		saveDefaultFiles()
 		updateRecyclerRecipes(false)
 	}
+
 	override fun fragmentTransaction(fragment: Fragment, tag: String) {
 		val fragmentManager = supportFragmentManager
 		val transaction = fragmentManager.beginTransaction()
@@ -359,6 +371,7 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 		}
 		transaction.commit()
 	}
+
 	override fun updateRecyclerDate(smoothTransition: Boolean, date: Long) {
 		masterMealPlanList.startDate = date
 		if (smoothTransition)
@@ -366,12 +379,14 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 		else
 			activityBinding.contentMain.recyclerDate.adapter!!.notifyDataSetChanged()
 	}
+
 	override fun updateRecyclerMP(smoothTransition: Boolean) {
 		if (smoothTransition)
 			activityBinding.contentMain.recyclerMP.adapter!!.notifyItemRangeChanged(0, mealPlanList.recipe.size)
 		else
 			activityBinding.contentMain.recyclerMP.adapter!!.notifyDataSetChanged()
 	}
+
 	override fun updateRecyclerRecipes(smoothTransition: Boolean) {
 		updateRecipeList(mealPlan.mode)
 		if (smoothTransition)
@@ -379,6 +394,7 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 		else
 			activityBinding.contentMain.recyclerRecipes.adapter!!.notifyDataSetChanged()
 	}
+
 	override fun saveDefaultFiles() {
 		val gc = GregorianCalendar()
 		gc.timeInMillis = masterMealPlanList.startDate
@@ -392,6 +408,7 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 			it.write(jsonToFile.toByteArray())
 		}
 	}
+
 	private fun updateRecipeList(mode: Int) {
 		recipeList.recipe.clear()
 		when (mode) {
@@ -431,30 +448,48 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 						recipeList.recipe.add(masterRecipeList.recipe[x])
 				}
 			}
+			SNACK_CAT -> {
+				for (x in 0 until masterRecipeList.recipe.size) {
+					val cat = masterRecipeList.recipe[x].cat
+					if (cat == SNACK_CAT) {
+						if (mealPlan.isMealMode && masterRecipeList.recipe[x].isMeal)
+							recipeList.recipe.add(masterRecipeList.recipe[x])
+						else if (!mealPlan.isMealMode && !masterRecipeList.recipe[x].isMeal)
+							recipeList.recipe.add(masterRecipeList.recipe[x])
+					}
+				}
+			}
 		}
 	}
+
 	private fun addSideDish(position: Int) {
 		when (mealPlan.mode) {
 			BREAKFAST_CAT -> {
-				val addThis = RecipeX(DEFAULT_EMPTY_RECIPE, "", "", 1, false)
+				val addThis = RecipeX(DEFAULT_EMPTY_RECIPE, "", "", BREAKFAST_CAT, false)
 				masterMealPlanList.breakfast.add(position + 1, addThis)
 				mealPlanList.recipe = masterMealPlanList.breakfast
 			}
 			LUNCH_CAT -> {
-				val addThis = RecipeX(DEFAULT_EMPTY_RECIPE, "", "", 2, false)
+				val addThis = RecipeX(DEFAULT_EMPTY_RECIPE, "", "", LUNCH_CAT, false)
 				masterMealPlanList.lunch.add(position + 1, addThis)
 				mealPlanList.recipe = masterMealPlanList.lunch
 			}
-			else -> {
-				val addThis = RecipeX(DEFAULT_EMPTY_RECIPE, "", "", 4, false)
+			DINNER_CAT -> {
+				val addThis = RecipeX(DEFAULT_EMPTY_RECIPE, "", "", DINNER_CAT, false)
 				masterMealPlanList.dinner.add(position + 1, addThis)
 				mealPlanList.recipe = masterMealPlanList.dinner
+			}
+			SNACK_CAT -> {
+				val addThis = RecipeX(DEFAULT_EMPTY_RECIPE, "", "", SNACK_CAT, false)
+				masterMealPlanList.snack.add(position + 1, addThis)
+				mealPlanList.recipe = masterMealPlanList.snack
 			}
 		}
 
 		updateRecyclerMP(false)
 		updateRecyclerDate(false, masterMealPlanList.startDate)
 	}
+
 	private fun randomizeSingleMeal(mealMode: Int, pos: Int) {
 		var random = (0 until recipeList.recipe.size).random()
 		if (mealMode != DINNER_CAT) {   // while the meal is the same, keep rolling random
@@ -475,6 +510,7 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 
 		updateRecyclerMP(true)
 	}
+
 	private fun randomizeMealPlan(mealMode: Int) {
 		val arraySize = mealPlanList.recipe.size
 		val shuffle = Recipe(mutableListOf())  // copying the list and
@@ -507,9 +543,11 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 		}
 		updateRecyclerMP(true)
 	}
+
 	override fun onDestroy() {
 		super.onDestroy()
 	}
+
 	class RecyclerAdapterRecipes(private val clickListener: RecyclerClickListener,
 	                             private val longClickListener: RecyclerLongClickListener) :
 			RecyclerView.Adapter<RecyclerAdapterRecipes.ViewHolder>() {
@@ -527,6 +565,7 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 			)
 			return ViewHolder(inflatedView)
 		}
+
 		override fun onBindViewHolder(holder: ViewHolder, position: Int) {
 			holder.tvItem.text = recipeList.recipe[position].name
 			holder.tvItem.setOnClickListener { view -> clickListener.onClick(view, holder.adapterPosition) }
@@ -536,9 +575,9 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 			}
 		}
 	}
+
 	class RecyclerAdapterMealPlan(private val clickListener: RecyclerClickListener, private val recycler: RecyclerView) :
-			RecyclerView.Adapter<RecyclerAdapterMealPlan.ViewHolder>()
-	{
+			RecyclerView.Adapter<RecyclerAdapterMealPlan.ViewHolder>() {
 		class ViewHolder(v: View) : RecyclerView.ViewHolder(v) {
 			private val tvItem: TextView = v.findViewById(R.id.tvItem)
 
@@ -547,6 +586,7 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 				tvItem.text = mealPlanList.recipe[position].name
 			}
 		}
+
 		override fun getItemCount() = mealPlanList.recipe.size
 
 		override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -557,18 +597,20 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 			)
 			return ViewHolder(inflatedView)
 		}
+
 		override fun onBindViewHolder(holder: ViewHolder, position: Int) {
 			holder.bind(position)
 			holder.itemView.setOnClickListener { view -> clickListener.onClick(view, holder.adapterPosition) }
 			holder.itemView.setOnDragListener(SetDragListener(position, recycler))
 		}
 	}
+
 	class RecyclerAdapterDate() :
-			RecyclerView.Adapter<RecyclerAdapterDate.ViewHolder>()
-	{
+			RecyclerView.Adapter<RecyclerAdapterDate.ViewHolder>() {
 		class ViewHolder(v: View) : RecyclerView.ViewHolder(v) {
 			val tvItem: TextView = v.findViewById(R.id.tvItem)
 		}
+
 		override fun getItemCount() = mealPlanList.recipe.size
 
 		override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -579,9 +621,10 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 			)
 			return ViewHolder(inflatedView)
 		}
+
 		override fun onBindViewHolder(holder: ViewHolder, position: Int) {
 			if (position == 0) {
-				mealPlan.dateIterator = intArrayOf(0, 0, 0)
+				mealPlan.dateIterator = intArrayOf(0, 0, 0, 0)
 			}
 			if (mealPlanList.recipe[position].isMeal) {
 				val gc = GregorianCalendar()
@@ -590,6 +633,9 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 				if (mealPlan.mode == DINNER_CAT) {
 					gc.add(Calendar.DATE, mealPlan.dateIterator[2])
 					mealPlan.dateIterator[2]++
+				} else if (mealPlan.mode == SNACK_CAT) {
+					gc.add(Calendar.DATE, mealPlan.dateIterator[3])
+					mealPlan.dateIterator[3]++
 				} else {
 					val x = mealPlan.mode - 1   // the position for Breakfast is 0 (Cat - 1), Lunch is 1 (Cat - 1)
 					gc.add(Calendar.DATE, mealPlan.dateIterator[x])
@@ -598,11 +644,11 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 
 				val df: DateFormat = SimpleDateFormat("MM/dd E", Locale.ENGLISH)
 				holder.tvItem.text = df.format(gc.time)
-			}
-			else
+			} else
 				holder.tvItem.text = " "    // if not a meal, a side, then show no date for the row
 		}
 	}
+
 	private fun setMPTouchHelper(recycler: RecyclerView, dateRec: RecyclerView): ItemTouchHelper {
 		val itemTouchCallback = object : ItemTouchHelper.Callback() {
 			override fun isLongPressDragEnabled() = true
@@ -615,6 +661,7 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 				val swipeFlags = ItemTouchHelper.END
 				return makeMovementFlags(dragFlags, swipeFlags)
 			}
+
 			override fun onMove(
 					recyclerView: RecyclerView, source: RecyclerView.ViewHolder,
 					target: RecyclerView.ViewHolder
@@ -631,6 +678,7 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 
 				return true
 			}
+
 			override fun onSwiped(viewHolder: RecyclerView.ViewHolder, swipeDir: Int) {
 				val pos = viewHolder.adapterPosition
 				if (mealPlanList.recipe[pos].isMeal) {
@@ -649,51 +697,30 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 		}
 		return ItemTouchHelper(itemTouchCallback)
 	}
-	private class SetDragListener(val posOfView: Int, val recycler: RecyclerView) : View.OnDragListener
-	{
-		override fun onDrag(v: View, event: DragEvent): Boolean {
-			when (event.action) {
-				DragEvent.ACTION_DRAG_STARTED -> {
-					if (event.clipDescription.hasMimeType(ClipDescription.MIMETYPE_TEXT_PLAIN)) {
-						v.invalidate()
-						return true
-					} else {
-						return false
-					}
-				}
-				DragEvent.ACTION_DRAG_ENTERED -> {
-					v.invalidate()
-					return true
-				}
-				DragEvent.ACTION_DRAG_LOCATION ->
-					// Ignore the event
-					return true
-				DragEvent.ACTION_DRAG_EXITED -> {
-					v.invalidate()
-					return true
-				}
-				DragEvent.ACTION_DROP -> {
-					val item: ClipData.Item = event.clipData.getItemAt(0)
 
-					//  (v as? ImageView)?.clearColorFilter()
-					//  (v as? TextView)?.setBackgroundColor(Color.TRANSPARENT)
-					//  v.invalidate()
-					val posOfDragged: Int = item.text.toString().toInt()
-					val pos = posOfView
-					mealPlanList.recipe[pos].name = recipeList.recipe[posOfDragged].name
-					mealPlanList.recipe[pos].ingredients = recipeList.recipe[posOfDragged].ingredients
-					mealPlanList.recipe[pos].instructions = recipeList.recipe[posOfDragged].instructions
-					mealPlanList.recipe[pos].cat = recipeList.recipe[posOfDragged].cat
-					recycler.adapter!!.notifyItemChanged(posOfView)
+	private class SetDragListener(val posOfView: Int, val recycler: RecyclerView) : View.OnDragListener {
+		override fun onDrag(v: View, event: DragEvent): Boolean {
+			if (event.action == DragEvent.ACTION_DRAG_STARTED) {
+				if (event.clipDescription.hasMimeType(ClipDescription.MIMETYPE_TEXT_PLAIN)) {
+					v.invalidate()
 					return true
-				}
-				DragEvent.ACTION_DRAG_ENDED -> {
-					// do nothing
-					return true
-				}
-				else -> {
+				} else {
 					return false
 				}
+			}
+			if (event.action == DragEvent.ACTION_DROP) {
+				val item: ClipData.Item = event.clipData.getItemAt(0)
+
+				val posOfDragged: Int = item.text.toString().toInt()
+				val pos = posOfView
+				mealPlanList.recipe[pos].name = recipeList.recipe[posOfDragged].name
+				mealPlanList.recipe[pos].ingredients = recipeList.recipe[posOfDragged].ingredients
+				mealPlanList.recipe[pos].instructions = recipeList.recipe[posOfDragged].instructions
+				mealPlanList.recipe[pos].cat = recipeList.recipe[posOfDragged].cat
+				recycler.adapter!!.notifyItemChanged(posOfView)
+				return true
+			} else {
+				return false
 			}
 		}
 	}

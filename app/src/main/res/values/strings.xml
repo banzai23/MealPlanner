@@ -6,6 +6,7 @@
     <string name="str_meal1">Breakfast</string>
     <string name="str_meal2">Lunch</string>
     <string name="str_meal3">Dinner</string>
+    <string name="str_meal4">Snacks</string>
     <string name="str_recipes">Recipes</string>
     <string name="str_meals">Meals</string>
     <string name="str_meal">Meal</string>
@@ -39,6 +40,7 @@
     <string name="menu_save">Save</string>
     <string name="menu_load">Load</string>
     <string name="menu_item">+Item</string>
+    <string name="menu_undo">Undo</string>
     <string name="menu_new_recipe">Add Custom</string>
     <string name="menu_new_recipe_internet">Add From site</string>
     <string name="menu_generate">Generate shopping list from meal plan</string>
@@ -51,6 +53,7 @@
     <!-- warning strings -->
     <string name="warn_noCat">You must save under at least 1 category</string>
     <string name="warn_noTitle">You must have a name for your recipe</string>
+    <string name="warn_snack">If saved under Snack, it can be the only category</string>
     <!-- dialog strings -->
     <string name="dialog_change_title">Input title for recipe:</string>
     <string name="dialog_website_url">Input website address for recipe:</string>
@@ -69,5 +72,6 @@
     <string name="snackbar_sl_load">Shopping list loaded!</string>
     <string name="snackbar_sl_save">Shopping list saved!</string>
     <string name="snackbar_sl_generate">Shopping list generated from meal plan!</string>
+    <string name="snackbar_undo">Nothing to Undo</string>
 
 </resources>
