@@ -512,11 +512,14 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 	}
 
 	private fun randomizeMealPlan(mealMode: Int) {
+		if (recipeList.recipe.size == 0)
+			return
 		val arraySize = mealPlanList.recipe.size
 		val shuffle = Recipe(mutableListOf())  // copying the list and
 
 		when (mealMode) {
 			DINNER_CAT -> {
+
 				for (x in 0 until recipeList.recipe.size) {
 					if (recipeList.recipe[x].cat >= DINNER_CAT)
 						shuffle.recipe.add(recipeList.recipe[x])
