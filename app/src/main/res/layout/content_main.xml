@@ -24,6 +24,8 @@
 
     <com.google.android.material.tabs.TabLayout
         android:id="@+id/tabsMS"
+        app:tabTextColor="@color/grey"
+        app:tabSelectedTextColor="@color/black"
         android:layout_width="match_parent"
         android:layout_height="@dimen/tab_height_ms"
         app:tabMinWidth="@dimen/tab_width_ms"
@@ -75,6 +77,8 @@
 
     <com.google.android.material.tabs.TabLayout
         android:id="@+id/tabsBLD"
+        app:tabTextColor="@color/grey"
+        app:tabSelectedTextColor="@color/black"
         android:layout_width="match_parent"
         android:layout_height="@dimen/tab_layout_height"
         app:tabMinWidth="@dimen/tab_width_bld"

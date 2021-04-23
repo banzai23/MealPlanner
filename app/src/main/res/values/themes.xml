@@ -1,7 +1,7 @@
 <resources>
     <style name="Theme.MealPlanner" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <item name="colorPrimary">@color/black</item>
-        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorPrimary">@color/white</item>
+        <item name="colorOnPrimary">@color/black</item>
         <item name="android:textColor">@color/black</item>
         <item name="android:textSize">@dimen/toolbar_text_size</item>
     </style>
