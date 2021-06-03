@@ -6,7 +6,7 @@
     android:id="@+id/layout_content_main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white"
+    android:background="@color/onPrimary"
     android:orientation="vertical"
     tools:context=".MainActivity">
 
@@ -14,20 +14,18 @@
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:background="@color/white"
         android:textAlignment="gravity"
-        android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
         app:layout_constraintTop_toTopOf="parent"
-        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
         app:title="@string/app_name"
-        app:titleTextColor="@color/black" />
+        app:titleTextColor="@color/primary" />
 
     <com.google.android.material.tabs.TabLayout
         android:id="@+id/tabsMS"
         app:tabTextColor="@color/grey"
-        app:tabSelectedTextColor="@color/black"
+        app:tabSelectedTextColor="@color/primary"
         android:layout_width="match_parent"
         android:layout_height="@dimen/tab_height_ms"
+        android:background="@color/onPrimary"
         app:tabMinWidth="@dimen/tab_width_ms"
         app:layout_constraintTop_toBottomOf="@+id/recyclerMP"
         app:tabIndicatorHeight="0dp">
@@ -66,7 +64,7 @@
         android:id="@+id/recyclerRecipes"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:background="@color/white"
+        android:background="@color/onPrimary"
         android:scrollbars="vertical"
         android:overScrollMode="never"
         android:layout_marginStart="@dimen/recycler_width"
@@ -78,10 +76,11 @@
     <com.google.android.material.tabs.TabLayout
         android:id="@+id/tabsBLD"
         app:tabTextColor="@color/grey"
-        app:tabSelectedTextColor="@color/black"
+        app:tabSelectedTextColor="@color/primary"
         android:layout_width="match_parent"
         android:layout_height="@dimen/tab_layout_height"
-        app:tabMinWidth="@dimen/tab_width_bld"
+        android:background="@color/onPrimary"
+        app:tabMaxWidth="@dimen/tab_width_bld"
         app:layout_constraintBottom_toBottomOf="parent"
         app:tabIndicatorFullWidth="true"
         app:tabIndicatorGravity="top">

@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white"
+    android:background="@color/onPrimary"
     tools:context=".EditRecipeFragment">
 
     <TextView
@@ -19,7 +19,7 @@
         android:id="@+id/nsv"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/white"
+        android:background="@color/onPrimary"
         app:layout_constraintTop_toTopOf="parent">
 
         <androidx.constraintlayout.widget.ConstraintLayout
@@ -36,7 +36,7 @@
                     android:id="@+id/et_title"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="@color/white"
+                    android:background="@color/onPrimary"
                     android:textAppearance="@style/TextAppearance.AppCompat.Large"
                     android:textSize="@dimen/text_size_header"
                     android:inputType="text"
@@ -48,14 +48,14 @@
                 android:id="@+id/textInputLayout2"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@color/white"
+                android:background="@color/onPrimary"
                 app:layout_constraintTop_toBottomOf="@id/textInputLayout1">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/et_recipe"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="@color/white"
+                    android:background="@color/onPrimary"
                     android:inputType="textMultiLine"
                     android:hint="@string/str_recipe_ing_hint"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -72,7 +72,7 @@
                     android:id="@+id/et_instructions"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="@color/white"
+                    android:background="@color/onPrimary"
                     android:inputType="textMultiLine"
                     android:hint="@string/str_recipe_instr_hint" />
             </com.google.android.material.textfield.TextInputLayout>

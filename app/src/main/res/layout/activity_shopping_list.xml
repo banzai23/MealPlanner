@@ -17,7 +17,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
         app:title="@string/sl_name"
-        app:titleTextColor="@color/black" />
+        app:titleTextColor="@color/primary" />
 
     <FrameLayout
         android:layout_width="match_parent"

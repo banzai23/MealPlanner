@@ -42,6 +42,44 @@ class EditRecipeFragment(position: Int,
 		binding.etInstructions.setText(editList.recipe[pos].instructions)
 		var cat = editList.recipe[pos].cat
 
+		// START Click listeners for Checkboxes
+		binding.cb1.setOnClickListener {
+			if (binding.cb1.isChecked)
+				cat += 1
+			else if (!binding.cb1.isChecked)
+				cat -= 1
+		}
+		binding.cb2.setOnClickListener {
+			if (binding.cb2.isChecked)
+				cat += 2
+			else if (!binding.cb2.isChecked)
+				cat -= 2
+		}
+		binding.cb3.setOnClickListener {
+			if (binding.cb3.isChecked)
+				cat += 4
+			else if (!binding.cb3.isChecked)
+				cat -= 4
+		}
+		binding.cb4.setOnClickListener {
+			binding.cb1.isChecked = false
+			binding.cb2.isChecked = false
+			binding.cb3.isChecked = false
+
+			if (binding.cb4.isChecked) {
+				cat = 10
+				binding.cb1.isClickable = false
+				binding.cb2.isClickable = false
+				binding.cb3.isClickable = false
+			}
+			else if (!binding.cb4.isChecked) {
+				cat = 0
+				binding.cb1.isClickable = true
+				binding.cb2.isClickable = true
+				binding.cb3.isClickable = true
+			}
+		}
+
 		// START Checkbox check for checks
 		if (cat == BREAKFAST_CAT)
 			binding.cb1.isChecked = true
@@ -71,27 +109,12 @@ class EditRecipeFragment(position: Int,
 			binding.cb2.isChecked = false
 			binding.cb3.isChecked = false
 			binding.cb4.isChecked = true
+
+			binding.cb1.isClickable = false
+			binding.cb2.isClickable = false
+			binding.cb3.isClickable = false
 		}
 		// END Checkbox check for checks
-		// START Click listeners for Checkboxes
-		binding.cb1.setOnClickListener {
-			if (binding.cb1.isChecked)
-				cat += 1
-			else if (!binding.cb1.isChecked)
-				cat -= 1
-		}
-		binding.cb2.setOnClickListener {
-			if (binding.cb2.isChecked)
-				cat += 2
-			else if (!binding.cb2.isChecked)
-				cat -= 2
-		}
-		binding.cb3.setOnClickListener {
-			if (binding.cb3.isChecked)
-				cat += 4
-			else if (!binding.cb3.isChecked)
-				cat -= 4
-		}
 
 		if (!editList.recipe[pos].isMeal)
 			binding.rbSide.isChecked = true
@@ -116,8 +139,12 @@ class EditRecipeFragment(position: Int,
 				if (cat > 0) {
 					if (name.length > MAX_RECIPE_TITLE_SIZE)
 						name = name.dropLast(name.length - MAX_RECIPE_TITLE_SIZE)
-					if (cat > 10)
+					if (cat > 10)   // safeguarding, in case I missed something in the earlier code; so nothing breaks.
 						cat = 10
+
+					if (cat == 10)
+						editList.recipe[pos].isMeal = true
+
 					editList.recipe[pos].name = name
 					editList.recipe[pos].ingredients = binding.etRecipe.text.toString()
 					editList.recipe[pos].instructions = binding.etInstructions.text.toString()
