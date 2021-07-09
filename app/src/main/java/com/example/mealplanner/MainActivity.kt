@@ -521,7 +521,7 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 			DINNER_CAT -> {
 
 				for (x in 0 until recipeList.recipe.size) {
-					if (recipeList.recipe[x].cat >= DINNER_CAT)
+					if (recipeList.recipe[x].cat >= DINNER_CAT && recipeList.recipe[x].cat != SNACK_CAT)
 						shuffle.recipe.add(recipeList.recipe[x])
 				}
 			}

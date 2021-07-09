@@ -80,6 +80,8 @@
         android:layout_width="match_parent"
         android:layout_height="@dimen/tab_layout_height"
         android:background="@color/onPrimary"
+        app:tabPaddingStart="5dp"
+        app:tabPaddingEnd="5dp"
         app:tabMaxWidth="@dimen/tab_width_bld"
         app:layout_constraintBottom_toBottomOf="parent"
         app:tabIndicatorFullWidth="true"

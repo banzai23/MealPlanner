@@ -118,6 +118,7 @@ class RecipeManagerActivity : AppCompatActivity(), RecipeActivityInterface {
 		builder.create()
 		builder.show()
 	}
+
 	private fun onDialogPositiveClick(dialog: DialogInterface, url: String) {
 		_binding!!.progressBar.visibility = View.VISIBLE
 		GlobalScope.launch(Dispatchers.IO) {

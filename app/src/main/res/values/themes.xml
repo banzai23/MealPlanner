@@ -10,7 +10,10 @@
         <item name="android:textSize">@dimen/toolbar_text_size</item>
         <item name="android:minHeight">0dp</item>
         <item name="android:minWidth">0dp</item>
-        <item name="android:padding">4dp</item>
+        <item name="android:paddingTop">3dp</item>
+        <item name="android:paddingBottom">3dp</item>
+        <item name="android:paddingStart">10dp</item>
+        <item name="android:paddingEnd">10dp</item>
     </style>
     <style name="ButtonMP" parent="Widget.AppCompat.Button.Colored">
         <item name="buttonGravity">center_vertical</item>
