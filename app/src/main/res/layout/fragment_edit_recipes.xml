@@ -3,10 +3,18 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/editRecipeFragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/onPrimary"
     tools:context=".EditRecipeFragment">
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/edit_recipe_guideline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.4" />
 
     <TextView
         android:id="@+id/hideActivityInput"
@@ -18,11 +26,11 @@
     <androidx.core.widget.NestedScrollView
         android:id="@+id/nsv"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/onPrimary"
+        android:layout_height="0dp"
         app:layout_constraintTop_toTopOf="parent">
 
         <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/nsv_constraint"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
@@ -151,4 +159,11 @@
                 app:layout_constraintTop_toBottomOf="@id/rbMealOrSide" />
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.core.widget.NestedScrollView>
+    <WebView
+        android:id="@+id/webView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toBottomOf="@id/edit_recipe_guideline"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:visibility="gone" />
 </androidx.constraintlayout.widget.ConstraintLayout>

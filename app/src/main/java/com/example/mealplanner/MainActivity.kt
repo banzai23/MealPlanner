@@ -175,7 +175,7 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 		val recClickListener = object : RecyclerClickListener {
 			override fun onClick(view: View, position: Int) {
 				fragmentTransaction(EditRecipeFragment(position,
-						false, true, false),
+						false, true, false, ""),
 						"editRecipe")
 			}
 		}
@@ -654,7 +654,7 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 
 	private fun setMPTouchHelper(recycler: RecyclerView, dateRec: RecyclerView): ItemTouchHelper {
 		val itemTouchCallback = object : ItemTouchHelper.Callback() {
-			override fun isLongPressDragEnabled() = true
+			override fun isLongPressDragEnabled() = false
 			override fun isItemViewSwipeEnabled() = true
 			override fun getMovementFlags(
 					recyclerView: RecyclerView, viewHolder:
@@ -665,6 +665,7 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 				return makeMovementFlags(dragFlags, swipeFlags)
 			}
 
+			/*
 			override fun onMove(
 					recyclerView: RecyclerView, source: RecyclerView.ViewHolder,
 					target: RecyclerView.ViewHolder
@@ -679,6 +680,13 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 
 				recyclerView.adapter!!.notifyItemMoved(source.adapterPosition, target.adapterPosition)
 
+				return true
+			}
+			*/
+			override fun onMove(
+					recyclerView: RecyclerView, source: RecyclerView.ViewHolder,
+					target: RecyclerView.ViewHolder
+			): Boolean {
 				return true
 			}
 
@@ -713,7 +721,7 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 			}
 			if (event.action == DragEvent.ACTION_DROP) {
 				val item: ClipData.Item = event.clipData.getItemAt(0)
-
+	// TODO: Test what happens when dropped inside the masterMealPlanList view
 				val posOfDragged: Int = item.text.toString().toInt()
 				val pos = posOfView
 				mealPlanList.recipe[pos].name = recipeList.recipe[posOfDragged].name

@@ -5,6 +5,8 @@ import android.content.Context
 import android.os.Bundle
 import android.view.View
 import android.view.inputmethod.InputMethodManager
+import android.webkit.WebView
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.fragment.app.Fragment
 import com.example.mealplanner.databinding.FragmentEditRecipesBinding
 import com.google.android.material.snackbar.Snackbar
@@ -15,7 +17,8 @@ import java.util.*
 class EditRecipeFragment(position: Int,
                          private val editMaster: Boolean,
                          private val launchedFromMainActivity: Boolean,
-						 private val deleteOnCancel: Boolean): Fragment(R.layout.fragment_edit_recipes) {
+						 private val deleteOnCancel: Boolean,
+						 private val url: String): Fragment(R.layout.fragment_edit_recipes) {
 	private var _binding: FragmentEditRecipesBinding? = null
 	private var pos = position
 	private lateinit var updateMainRec: ActivityInterface
@@ -30,6 +33,18 @@ class EditRecipeFragment(position: Int,
 			updateMainRec = context as ActivityInterface
 		else
 			updateRecipeRec = context as RecipeActivityInterface
+
+		if (url != "") {
+			val params = binding.nsv.layoutParams as ConstraintLayout.LayoutParams
+			params.bottomToTop = R.id.edit_recipe_guideline
+			params.topToTop = R.id.editRecipeFragment
+			binding.nsvConstraint.requestLayout()
+
+			val myWebView = view.findViewById<WebView>(R.id.webView)
+			myWebView.visibility = View.VISIBLE
+			myWebView.loadUrl(url)
+			myWebView.settings.javaScriptEnabled = true
+		}
 
 		val editList: Recipe =
 			if (editMaster)

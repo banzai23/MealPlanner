@@ -42,7 +42,7 @@ class RecipeManagerActivity : AppCompatActivity(), RecipeActivityInterface {
 		val rmClickListener = object : RecyclerClickListener {
 			override fun onClick(view: View, position: Int) {
 				if (view.id == R.id.btn_Edit) {
-					loadEditRecipe(position, false)
+					loadEditRecipe(position, false, "")
 				} else if (view.id == R.id.btn_Delete) {
 					val builder = AlertDialog.Builder(this@RecipeManagerActivity)
 					val dialogString = getString(R.string.dialog_delete_recipe)+" \""+masterRecipeList.recipe[position].name+"\"?"
@@ -68,7 +68,7 @@ class RecipeManagerActivity : AppCompatActivity(), RecipeActivityInterface {
 	override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
 		R.id.action_new_recipe -> {
 			masterRecipeList.recipe.add(RecipeX("", "", "", 0, true))
-			loadEditRecipe(masterRecipeList.recipe.size - 1, true) // the position is the new size - 1
+			loadEditRecipe(masterRecipeList.recipe.size - 1, true, "") // the position is the new size - 1
 			true
 		}
 		R.id.action_new_recipe_internet -> {
@@ -102,11 +102,11 @@ class RecipeManagerActivity : AppCompatActivity(), RecipeActivityInterface {
 	}
 	private fun showErrorDialog(errorCode: Int) {
 		val builder = AlertDialog.Builder(this)
-		if (errorCode == 1)
+		if (errorCode == 11)
 			builder.setMessage(R.string.dialog_recipe_internet_error1)
-		else if (errorCode == 2)
+		else if (errorCode == 12)
 			builder.setMessage(R.string.dialog_recipe_internet_error2)
-		else if (errorCode == 3)
+		else if (errorCode == 13)
 			builder.setMessage(R.string.dialog_recipe_internet_error3)
 		else
 			builder.setMessage(R.string.dialog_recipe_internet_error)
@@ -124,18 +124,22 @@ class RecipeManagerActivity : AppCompatActivity(), RecipeActivityInterface {
 		GlobalScope.launch(Dispatchers.IO) {
 			val recipeAndReturn = getRecipeFromURL(url)
 			runOnUiThread {
-				if (recipeAndReturn.returnCode != 0) {
-					dialog.dismiss()
-					_binding!!.progressBar.visibility = View.INVISIBLE
-					showErrorDialog(recipeAndReturn.returnCode)
+				dialog.dismiss()
+				_binding!!.progressBar.visibility = View.INVISIBLE
+
+				val returnCode = recipeAndReturn.returnCode
+				if (returnCode != 0 && returnCode != 1) {
+					showErrorDialog(returnCode) // if unsuccessful, show an error dialog
 				} else {
-					dialog.dismiss()
-					_binding!!.progressBar.visibility = View.INVISIBLE
+					var urlParam = ""
+					if (returnCode == 1)
+						urlParam = url
+
 					masterRecipeList.recipe.add(RecipeX(recipeAndReturn.name,
 							recipeAndReturn.ingredients,
 							recipeAndReturn.instructions,
 							0, true))
-					loadEditRecipe(masterRecipeList.recipe.size - 1, true) // the position is the new size - 1
+					loadEditRecipe(masterRecipeList.recipe.size - 1, true, urlParam) // the position is the new size - 1
 				}
 			}
 		}
@@ -147,7 +151,7 @@ class RecipeManagerActivity : AppCompatActivity(), RecipeActivityInterface {
 		super.onDestroy()
 		_binding = null
 	}
-	private fun loadEditRecipe(pos: Int, deleteOnCancel: Boolean) {
+	private fun loadEditRecipe(pos: Int, deleteOnCancel: Boolean, url: String) {
 		val fragmentManager = supportFragmentManager
 		val transaction = fragmentManager.beginTransaction()
 		val findFrag = fragmentManager.findFragmentByTag("editRecipe")
@@ -159,7 +163,7 @@ class RecipeManagerActivity : AppCompatActivity(), RecipeActivityInterface {
 					"editRecipe")
 		} else {
 			transaction.add(R.id.rm_root, EditRecipeFragment(pos, true,
-					false, deleteOnCancel), "editRecipe")
+					false, deleteOnCancel, url), "editRecipe")
 			transaction.addToBackStack(null)
 		}
 		transaction.commit()

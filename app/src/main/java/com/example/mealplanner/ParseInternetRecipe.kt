@@ -62,7 +62,7 @@ fun getRecipeFromURL(url: String): RecipeAndReturn {
 		testUrl2 = testUrl2.substringAfterLast(".")
 		if (testUrl2.length <= 1 || testUrl2.length >= 5) {
 			println("Invalid URL; terminating program")
-			return RecipeAndReturn("", "", "", 1)   // invalid URL ending address
+			return RecipeAndReturn("", "", "", 11)   // invalid URL ending address
 		}
 
 		val sslContext: SSLContext = SSLContext.getInstance("TLSv1.2")
@@ -73,10 +73,10 @@ fun getRecipeFromURL(url: String): RecipeAndReturn {
 			connection = URL(testUrl).openConnection() as HttpsURLConnection
 		} catch (e: MalformedURLException) {
 			print("MalformedURL: $e")
-			return RecipeAndReturn("", "", "", 1)
+			return RecipeAndReturn("", "", "", 11)
 		} catch (e: IOException) {
 			print("IO error: $e")
-			return RecipeAndReturn("", "", "", 2)
+			return RecipeAndReturn("", "", "", 12)
 		}
 		connection.sslSocketFactory = socketFactory
 		connection.setRequestProperty(
@@ -88,7 +88,7 @@ fun getRecipeFromURL(url: String): RecipeAndReturn {
 			connection.connect()
 		} catch (e: UnknownHostException) {
 			println("Error: $e")
-			return RecipeAndReturn("", "", "", 3)
+			return RecipeAndReturn("", "", "", 13)
 		}
 
 		try {
@@ -96,7 +96,7 @@ fun getRecipeFromURL(url: String): RecipeAndReturn {
 		} catch (e: IOException) {
 			println("Error: $e")
 			println("Could not get recipe from URL")
-			return RecipeAndReturn("", "", "", 2)
+			return RecipeAndReturn("", "", "", 14)
 		}
 		reader = BufferedReader(InputStreamReader(input))
 		urlPassed = true
@@ -236,7 +236,7 @@ fun getRecipeFromURL(url: String): RecipeAndReturn {
 	name = name.replace("&amp;", "&")
 
 	if (ingredients == "" && instructions == "")
-		return RecipeAndReturn("", "", "", 99)
+		return RecipeAndReturn("", "", "", 1)
 
 	val regex = "<[^>]*>".toRegex()
 	instructions = instructions.replace(regex, "")
