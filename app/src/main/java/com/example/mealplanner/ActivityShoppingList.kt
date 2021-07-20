@@ -54,6 +54,7 @@ class ShoppingListActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListe
 		val setTouch = setSLTouchHelper(binding.recyclerShoppingList)
 		setTouch.attachToRecyclerView(binding.recyclerShoppingList)
 	}
+
 	override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
 		R.id.action_undo -> {
 			if (undo.list.size > 0) {
@@ -71,14 +72,14 @@ class ShoppingListActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListe
 			val editText = EditText(this)
 			builder.setMessage(R.string.dialog_add_item)
 			builder.setView(editText)
-				.setPositiveButton(R.string.dialog_ok
-				) { dialog, _ ->
-					onDialogPositiveClick(dialog, editText.text.toString())
-				}
-				.setNegativeButton(R.string.str_cancel
-				) { dialog, _ ->
-					onDialogNegativeClick(dialog)
-				}
+					.setPositiveButton(R.string.dialog_ok
+					) { dialog, _ ->
+						onDialogPositiveClick(dialog, editText.text.toString())
+					}
+					.setNegativeButton(R.string.str_cancel
+					) { dialog, _ ->
+						onDialogNegativeClick(dialog)
+					}
 			builder.create()
 			builder.show()
 			true
@@ -114,26 +115,29 @@ class ShoppingListActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListe
 			super.onOptionsItemSelected(item)
 		}
 	}
+
 	override fun onCreateOptionsMenu(menu: Menu): Boolean {
 		val inflater: MenuInflater = menuInflater
 		inflater.inflate(R.menu.menu_shopping_list, menu)
 		return true
 	}
+
 	private fun loadShoppingList(): Boolean {
 		val inputStream =
-			try {
-				this.openFileInput(DEFAULT_SHOPPING_LIST_FILE)
-			} catch (e: FileNotFoundException) {
-				return false
-			}
+				try {
+					this.openFileInput(DEFAULT_SHOPPING_LIST_FILE)
+				} catch (e: FileNotFoundException) {
+					return false
+				}
 		val inputString = inputStream.bufferedReader().readText()
 		val ingredients: MutableList<String> = Json.decodeFromString(inputString)
-		if(allIngredients.isNotEmpty())
+		if (allIngredients.isNotEmpty())
 			allIngredients.clear()
 		allIngredients.addAll(ingredients)
 
 		return true
 	}
+
 	private fun generateShoppingList() {
 		val getAll: MutableList<String> = mutableListOf()
 		var totalSize = masterMealPlanList.breakfast.size
@@ -142,14 +146,12 @@ class ShoppingListActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListe
 			for (y in split.indices) {
 				if (split[y].isEmpty()) {
 					// do nothing
-				}
-				else if (split[y][0].isDigit()) {
+				} else if (split[y][0].isDigit()) {
 					if (split[y].contains("("))
 						getAll.add(split[y].substringAfter(" ").substringBefore("("))
 					else
 						getAll.add(split[y].substringAfter(" ").substringBefore(","))
-				}
-				else
+				} else
 					getAll.add(split[y].substringBefore(",").substringBefore("("))
 			}
 		}
@@ -159,11 +161,9 @@ class ShoppingListActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListe
 			for (y in split.indices) {
 				if (split[y].isEmpty()) {
 					// do nothing
-				}
-				else if (split[y] == "\n") {
+				} else if (split[y] == "\n") {
 					// do nothing
-				}
-				else if (split[y][0].isDigit())
+				} else if (split[y][0].isDigit())
 					getAll.add(split[y].substringAfter(" ").substringBefore(","))
 				else
 					getAll.add(split[y].substringBefore(","))
@@ -175,8 +175,7 @@ class ShoppingListActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListe
 			for (y in split.indices) {
 				if (split[y].isEmpty()) {
 					// do nothing
-				}
-				else if (split[y][0].isDigit())
+				} else if (split[y][0].isDigit())
 					getAll.add(split[y].substringAfter(" ").substringBefore(","))
 				else
 					getAll.add(split[y].substringBefore(","))
@@ -188,8 +187,7 @@ class ShoppingListActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListe
 			for (y in split.indices) {
 				if (split[y].isEmpty()) {
 					// do nothing
-				}
-				else if (split[y][0].isDigit())
+				} else if (split[y][0].isDigit())
 					getAll.add(split[y].substringAfter(" ").substringBefore(","))
 				else
 					getAll.add(split[y].substringBefore(","))
@@ -213,10 +211,10 @@ class ShoppingListActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListe
 
 			getAll[x] = getAll[x].trim()
 			when {
-			/*	getAll[x].contains(") ") ->
-					getAll[x] = getAll[x].substringAfter(") ")
-				getAll[x].contains(")") ->
-					getAll[x] = getAll[x].substringAfter(")") */
+				/*	getAll[x].contains(") ") ->
+						getAll[x] = getAll[x].substringAfter(") ")
+					getAll[x].contains(")") ->
+						getAll[x] = getAll[x].substringAfter(")") */
 				getAll[x].contains("teaspoons ", true) ->
 					getAll[x] = getAll[x].substringAfter("teaspoons ")
 				getAll[x].contains("teaspoon ", true) ->
@@ -262,6 +260,7 @@ class ShoppingListActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListe
 
 		allIngredients = getAll.toSet().toMutableList()
 	}
+
 	private fun onDialogPositiveClick(dialog: DialogInterface, itemText: String) {
 		if (itemText.isNotEmpty()) {
 			val string = itemText.trim().capitalize(Locale.ENGLISH)
@@ -270,6 +269,7 @@ class ShoppingListActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListe
 			dialog.dismiss()
 		}
 	}
+
 	private fun onDialogEdit(dialog: DialogInterface, pos: Int, text: String) {
 		if (text.isNotBlank()) {
 			allIngredients[pos] = text.trim().capitalize(Locale.ENGLISH)
@@ -277,9 +277,11 @@ class ShoppingListActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListe
 		}
 		dialog.dismiss()
 	}
+
 	private fun onDialogNegativeClick(dialog: DialogInterface) {
 		dialog.cancel()
 	}
+
 	private fun showPopup(v: View, pos: Int) {
 		PopupMenu(v.context, v).apply {
 			setOnMenuItemClickListener(this@ShoppingListActivity)
@@ -287,32 +289,34 @@ class ShoppingListActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListe
 			show()
 		}
 	}
+
 	override fun onMenuItemClick(item: MenuItem): Boolean {
-		return if (item.groupId >= 0)
-		{
+		return if (item.groupId >= 0) {
 			editRecipePopup(item.groupId)
 			true
 		} else {
 			false
 		}
 	}
+
 	private fun editRecipePopup(pos: Int) {
 		val builder = AlertDialog.Builder(this)
 		val editText = EditText(this)
 		editText.setText(allIngredients[pos])
 		builder.setMessage(R.string.dialog_edit_list)
 		builder.setView(editText)
-			.setPositiveButton(R.string.dialog_ok
-			) { dialog, _ ->
-				onDialogEdit(dialog, pos, editText.text.toString())
-			}
-			.setNegativeButton(R.string.str_cancel
-			) { dialog, _ ->
-				onDialogNegativeClick(dialog)
-			}
+				.setPositiveButton(R.string.dialog_ok
+				) { dialog, _ ->
+					onDialogEdit(dialog, pos, editText.text.toString())
+				}
+				.setNegativeButton(R.string.str_cancel
+				) { dialog, _ ->
+					onDialogNegativeClick(dialog)
+				}
 		builder.create()
 		builder.show()
 	}
+
 	private fun setSLTouchHelper(recycler: RecyclerView): ItemTouchHelper {
 		val itemTouchCallback = object : ItemTouchHelper.Callback() {
 			override fun isLongPressDragEnabled() = true
@@ -325,6 +329,7 @@ class ShoppingListActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListe
 				val swipeFlags = ItemTouchHelper.END
 				return makeMovementFlags(dragFlags, swipeFlags)
 			}
+
 			override fun onMove(
 					recyclerView: RecyclerView, source: RecyclerView.ViewHolder,
 					target: RecyclerView.ViewHolder
@@ -341,6 +346,7 @@ class ShoppingListActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListe
 
 				return true
 			}
+
 			override fun onSwiped(viewHolder: RecyclerView.ViewHolder, swipeDir: Int) {
 				val pos = viewHolder.adapterPosition
 				undo.list.add(UndoListX(allIngredients[pos], pos))
@@ -350,11 +356,13 @@ class ShoppingListActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListe
 		}
 		return ItemTouchHelper(itemTouchCallback)
 	}
+
 	override fun onDestroy() {
 		super.onDestroy()
 		_binding = null
 	}
 }
+
 class RecyclerAdapterShoppingList(private val clickListener: RecyclerClickListener, private var ingredients: MutableList<String>) :
 		RecyclerView.Adapter<RecyclerAdapterShoppingList.ViewHolder>() {
 	class ViewHolder(v: View) : RecyclerView.ViewHolder(v) {
@@ -371,8 +379,12 @@ class RecyclerAdapterShoppingList(private val clickListener: RecyclerClickListen
 		)
 		return ViewHolder(inflatedView)
 	}
+
 	override fun onBindViewHolder(holder: ViewHolder, position: Int) {
 		holder.tvItem.text = ingredients[position]
 		holder.tvItem.setOnClickListener { view -> clickListener.onClick(view, holder.adapterPosition) }
 	}
 }
+
+// TODO: Shopping List can pick next week, 2 weeks, 3 weeks, or 4 weeks. RadioGroup on a dialog.
+// TODO: Nail down the design of the list

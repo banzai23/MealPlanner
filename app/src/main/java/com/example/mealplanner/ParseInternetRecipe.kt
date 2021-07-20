@@ -243,8 +243,8 @@ fun getRecipeFromURL(url: String): RecipeAndReturn {
 	ingredients = ingredients.replace(regex, "")
 	// replace characters for ingredients
 	for (x in Replacements.item.indices step 2) {
-		ingredients = ingredients.replace(Replacements.item[x], Replacements.item[x+1])
-		instructions = instructions.replace(Replacements.item[x], Replacements.item[x+1])
+		ingredients = ingredients.replace(Replacements.item[x], Replacements.item[x + 1])
+		instructions = instructions.replace(Replacements.item[x], Replacements.item[x + 1])
 	}
 	ingredients = ingredients.trimEnd()
 	instructions = instructions.trimEnd()
@@ -254,38 +254,39 @@ fun getRecipeFromURL(url: String): RecipeAndReturn {
 
 	return RecipeAndReturn(name, ingredients, instructions, 0)
 }
+
 object Replacements {
 	val item = listOf(
-		"\\u2014", "-",
-		"\\u2153", "⅓",
-		"\\u2155", "⅕",
-		"\\u00bc", "¼",
-		"\\u00bd", "½",
-		"\\u00be", "¾",
-		"\\u00ba", "º",
-		"\\u00b0", "º",
-		"\\u2109", "º",
-		"\\u00a0", "",
-		"\\u00ae", "",
-		"&amp;", "&",
-		"&#039;", "'",
-		"&#8220;", "\"",
-		"&#8221;", "\"",
-		"&#8242;", "",
-		"&#8243;", "\"",
-		"\\u00f1", "ñ",
-		"&#8211;", "-",
-		"\\/", "/",
-		"\\r", "",
-		"\\n", "",
-		"&#215;", "×",
-		"&#x27;", "'",
-		"&quot;", "\"",
-		"&#8217;", "'",
-		"&nbsp;", "",
-		"\\u00a0", "",
-		"\\u2019", "'",
-		"\\u00e9", "é",
-		"\\u201d", "\"",
-		"\\\"", "\"")
+			"\\u2014", "-",
+			"\\u2153", "⅓",
+			"\\u2155", "⅕",
+			"\\u00bc", "¼",
+			"\\u00bd", "½",
+			"\\u00be", "¾",
+			"\\u00ba", "º",
+			"\\u00b0", "º",
+			"\\u2109", "º",
+			"\\u00a0", "",
+			"\\u00ae", "",
+			"&amp;", "&",
+			"&#039;", "'",
+			"&#8220;", "\"",
+			"&#8221;", "\"",
+			"&#8242;", "",
+			"&#8243;", "\"",
+			"\\u00f1", "ñ",
+			"&#8211;", "-",
+			"\\/", "/",
+			"\\r", "",
+			"\\n", "",
+			"&#215;", "×",
+			"&#x27;", "'",
+			"&quot;", "\"",
+			"&#8217;", "'",
+			"&nbsp;", "",
+			"\\u00a0", "",
+			"\\u2019", "'",
+			"\\u00e9", "é",
+			"\\u201d", "\"",
+			"\\\"", "\"")
 }

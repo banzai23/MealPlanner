@@ -17,8 +17,8 @@ import java.util.*
 class EditRecipeFragment(position: Int,
                          private val editMaster: Boolean,
                          private val launchedFromMainActivity: Boolean,
-						 private val deleteOnCancel: Boolean,
-						 private val url: String): Fragment(R.layout.fragment_edit_recipes) {
+                         private val deleteOnCancel: Boolean,
+                         private val url: String) : Fragment(R.layout.fragment_edit_recipes) {
 	private var _binding: FragmentEditRecipesBinding? = null
 	private var pos = position
 	private lateinit var updateMainRec: ActivityInterface
@@ -44,17 +44,22 @@ class EditRecipeFragment(position: Int,
 			myWebView.visibility = View.VISIBLE
 			myWebView.loadUrl(url)
 			myWebView.settings.javaScriptEnabled = true
+
+			//	requireActivity().window.setSoftInputMode(
+			//			WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
+			// doesn't work try other things to hide keyboard
 		}
 
 		val editList: Recipe =
-			if (editMaster)
-				masterRecipeList
-			else
-				recipeList
+				if (editMaster)
+					masterRecipeList
+				else
+					recipeList
 
 		binding.etTitle.setText(editList.recipe[pos].name)
 		binding.etRecipe.setText(editList.recipe[pos].ingredients)
 		binding.etInstructions.setText(editList.recipe[pos].instructions)
+
 		var cat = editList.recipe[pos].cat
 
 		// START Click listeners for Checkboxes
@@ -86,8 +91,7 @@ class EditRecipeFragment(position: Int,
 				binding.cb1.isClickable = false
 				binding.cb2.isClickable = false
 				binding.cb3.isClickable = false
-			}
-			else if (!binding.cb4.isChecked) {
+			} else if (!binding.cb4.isChecked) {
 				cat = 0
 				binding.cb1.isClickable = true
 				binding.cb2.isClickable = true
@@ -179,10 +183,10 @@ class EditRecipeFragment(position: Int,
 			}
 		}
 	}
+
 	private fun exitEditRecipes() {
 		val imm: InputMethodManager = requireContext().getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
 		imm.hideSoftInputFromWindow(requireView().windowToken, 0)
-
 		if (launchedFromMainActivity)
 			updateMainRec.updateRecyclerRecipes(false)
 		else
@@ -190,6 +194,7 @@ class EditRecipeFragment(position: Int,
 
 		requireActivity().supportFragmentManager.popBackStack()
 	}
+
 	override fun onDestroyView() {
 		super.onDestroyView()
 		_binding = null
@@ -297,8 +302,6 @@ class RecyclerAdapterSR():
 		} */
 	}
 }*/
-
-
 
 
 /*

@@ -45,7 +45,7 @@ class RecipeManagerActivity : AppCompatActivity(), RecipeActivityInterface {
 					loadEditRecipe(position, false, "")
 				} else if (view.id == R.id.btn_Delete) {
 					val builder = AlertDialog.Builder(this@RecipeManagerActivity)
-					val dialogString = getString(R.string.dialog_delete_recipe)+" \""+masterRecipeList.recipe[position].name+"\"?"
+					val dialogString = getString(R.string.dialog_delete_recipe) + " \"" + masterRecipeList.recipe[position].name + "\"?"
 					builder.setMessage(dialogString)
 					builder.setPositiveButton(R.string.dialog_yes
 					) { dialog, _ ->
@@ -53,10 +53,10 @@ class RecipeManagerActivity : AppCompatActivity(), RecipeActivityInterface {
 						binding.recyclerRM.adapter!!.notifyItemRemoved(position)
 						dialog.dismiss()
 					}
-					.setNegativeButton(R.string.dialog_no
-					) { dialog, _ ->
-						dialog.dismiss()
-					}
+							.setNegativeButton(R.string.dialog_no
+							) { dialog, _ ->
+								dialog.dismiss()
+							}
 					builder.create()
 					builder.show()
 				}
@@ -65,6 +65,7 @@ class RecipeManagerActivity : AppCompatActivity(), RecipeActivityInterface {
 		binding.recyclerRM.layoutManager = LinearLayoutManager(this)
 		binding.recyclerRM.adapter = RecyclerAdapterRecipeManager(rmClickListener)
 	}
+
 	override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
 		R.id.action_new_recipe -> {
 			masterRecipeList.recipe.add(RecipeX("", "", "", 0, true))
@@ -79,27 +80,30 @@ class RecipeManagerActivity : AppCompatActivity(), RecipeActivityInterface {
 			super.onOptionsItemSelected(item)
 		}
 	}
+
 	override fun onCreateOptionsMenu(menu: Menu): Boolean {
 		val inflater: MenuInflater = menuInflater
 		inflater.inflate(R.menu.menu_recipe_manager, menu)
 		return true
 	}
+
 	private fun openDialog() {
 		val builder = AlertDialog.Builder(this)
 		val editText = EditText(this)
 		builder.setMessage(R.string.dialog_website_url)
 		builder.setView(editText)
-			.setPositiveButton(R.string.dialog_ok
-			) { dialog, _ ->
-				onDialogPositiveClick(dialog, editText.text.toString())
-			}
-			.setNegativeButton(R.string.str_cancel
-			) { dialog, _ ->
-				dialog.cancel()
-			}
+				.setPositiveButton(R.string.dialog_ok
+				) { dialog, _ ->
+					onDialogPositiveClick(dialog, editText.text.toString())
+				}
+				.setNegativeButton(R.string.str_cancel
+				) { dialog, _ ->
+					dialog.cancel()
+				}
 		builder.create()
 		builder.show()
 	}
+
 	private fun showErrorDialog(errorCode: Int) {
 		val builder = AlertDialog.Builder(this)
 		if (errorCode == 11)
@@ -144,13 +148,16 @@ class RecipeManagerActivity : AppCompatActivity(), RecipeActivityInterface {
 			}
 		}
 	}
+
 	override fun updateRecycler() {
 		_binding!!.recyclerRM.adapter!!.notifyDataSetChanged()
 	}
+
 	override fun onDestroy() {
 		super.onDestroy()
 		_binding = null
 	}
+
 	private fun loadEditRecipe(pos: Int, deleteOnCancel: Boolean, url: String) {
 		val fragmentManager = supportFragmentManager
 		val transaction = fragmentManager.beginTransaction()
@@ -169,9 +176,9 @@ class RecipeManagerActivity : AppCompatActivity(), RecipeActivityInterface {
 		transaction.commit()
 	}
 }
-class RecyclerAdapterRecipeManager(private val listener: RecyclerClickListener):
-	RecyclerView.Adapter<RecyclerAdapterRecipeManager.ViewHolder>()
-{
+
+class RecyclerAdapterRecipeManager(private val listener: RecyclerClickListener) :
+		RecyclerView.Adapter<RecyclerAdapterRecipeManager.ViewHolder>() {
 	class ViewHolder(v: View) : RecyclerView.ViewHolder(v) {
 		val tvItem: TextView = v.findViewById(R.id.tv_Item)
 		val btnEdit: Button = v.findViewById(R.id.btn_Edit)
@@ -182,11 +189,12 @@ class RecyclerAdapterRecipeManager(private val listener: RecyclerClickListener):
 
 	override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
 		val inflatedView = LayoutInflater.from(parent.context).inflate(
-			R.layout.recycler_recipe_manager,
-			parent,
-			false)
+				R.layout.recycler_recipe_manager,
+				parent,
+				false)
 		return ViewHolder(inflatedView)
 	}
+
 	override fun onBindViewHolder(holder: ViewHolder, position: Int) {
 		holder.tvItem.text = masterRecipeList.recipe[position].name
 		holder.btnEdit.setOnClickListener { view -> listener.onClick(view, holder.adapterPosition) }

@@ -20,6 +20,7 @@ class CalendarFragment : Fragment(R.layout.fragment_calendar) {
 		super.onAttach(context)
 		updateAct = context as ActivityInterface
 	}
+
 	override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 		super.onViewCreated(view, savedInstanceState)
 		val binding = FragmentCalendarBinding.bind(view)
@@ -46,7 +47,7 @@ class CalendarFragment : Fragment(R.layout.fragment_calendar) {
 		binding.btnSelectDate.setOnClickListener {
 			// save what we were looking at before on the MealPlanAdapter
 			gc.timeInMillis = masterMealPlanList.startDate
-			var filename: String = gc.get(Calendar.WEEK_OF_YEAR).toString()+"_"+gc.get(Calendar.YEAR).toString()
+			var filename: String = gc.get(Calendar.WEEK_OF_YEAR).toString() + "_" + gc.get(Calendar.YEAR).toString()
 			requireContext().openFileOutput(filename, Context.MODE_PRIVATE).use {
 				val jsonToFile = Json.encodeToString(masterMealPlanList)
 				it.write(jsonToFile.toByteArray())
@@ -56,28 +57,28 @@ class CalendarFragment : Fragment(R.layout.fragment_calendar) {
 			gc.timeInMillis = selectedDate
 			println(gc.timeInMillis)
 
-			filename = gc.get(Calendar.WEEK_OF_YEAR).toString()+"_"+gc.get(Calendar.YEAR).toString() // setting filename to week# of year + year
+			filename = gc.get(Calendar.WEEK_OF_YEAR).toString() + "_" + gc.get(Calendar.YEAR).toString() // setting filename to week# of year + year
 			val inputStream: InputStream
 			try {
-					inputStream = requireContext().openFileInput(filename)
-					val inputString = inputStream.bufferedReader().use { it.readText() }
-					masterMealPlanList = Json.decodeFromString(inputString)
-				} catch (e: FileNotFoundException) {
-					masterMealPlanList.breakfast.clear()
-					masterMealPlanList.lunch.clear()
-					masterMealPlanList.dinner.clear()
-					masterMealPlanList.snack.clear()
-					for (x in 0 until 7) {
-						val addBreak = RecipeX(DEFAULT_EMPTY_RECIPE, "", "", BREAKFAST_CAT, true)
-						masterMealPlanList.breakfast.add(x, addBreak)
-						val addLunch = RecipeX(DEFAULT_EMPTY_RECIPE, "", "", LUNCH_CAT, true)
-						masterMealPlanList.lunch.add(x, addLunch)
-						val addDinner = RecipeX(DEFAULT_EMPTY_RECIPE, "", "", DINNER_CAT, true)
-						masterMealPlanList.dinner.add(x, addDinner)
-						val addSnack = RecipeX(DEFAULT_EMPTY_RECIPE, "", "", SNACK_CAT, true)
-						masterMealPlanList.snack.add(x, addSnack)
-					}
+				inputStream = requireContext().openFileInput(filename)
+				val inputString = inputStream.bufferedReader().use { it.readText() }
+				masterMealPlanList = Json.decodeFromString(inputString)
+			} catch (e: FileNotFoundException) {
+				masterMealPlanList.breakfast.clear()
+				masterMealPlanList.lunch.clear()
+				masterMealPlanList.dinner.clear()
+				masterMealPlanList.snack.clear()
+				for (x in 0 until 7) {
+					val addBreak = RecipeX(DEFAULT_EMPTY_RECIPE, "", "", BREAKFAST_CAT, true)
+					masterMealPlanList.breakfast.add(x, addBreak)
+					val addLunch = RecipeX(DEFAULT_EMPTY_RECIPE, "", "", LUNCH_CAT, true)
+					masterMealPlanList.lunch.add(x, addLunch)
+					val addDinner = RecipeX(DEFAULT_EMPTY_RECIPE, "", "", DINNER_CAT, true)
+					masterMealPlanList.dinner.add(x, addDinner)
+					val addSnack = RecipeX(DEFAULT_EMPTY_RECIPE, "", "", SNACK_CAT, true)
+					masterMealPlanList.snack.add(x, addSnack)
 				}
+			}
 
 			if (mealPlan.mode == BREAKFAST_CAT)
 				mealPlanList.recipe = masterMealPlanList.breakfast
@@ -105,6 +106,7 @@ class CalendarFragment : Fragment(R.layout.fragment_calendar) {
 			requireActivity().supportFragmentManager.popBackStack()
 		}
 	}
+
 	override fun onDestroyView() {
 		super.onDestroyView()
 		_binding = null

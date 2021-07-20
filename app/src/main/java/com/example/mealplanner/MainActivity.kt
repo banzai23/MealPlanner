@@ -45,21 +45,25 @@ var assetsLoaded: Boolean = false
 
 @Serializable
 data class Recipe(var recipe: MutableList<RecipeX>)
+
 @Serializable
 data class RecipeX(var name: String = "", var ingredients: String = "",
                    var instructions: String = "", var cat: Int, var isMeal: Boolean)
+
 @Serializable
 data class MealPlan(var breakfast: MutableList<RecipeX>,
                     var lunch: MutableList<RecipeX>,
                     var dinner: MutableList<RecipeX>,
                     var snack: MutableList<RecipeX>,
                     var startDate: Long)
+
 class MealPlanData {
 	var dateIterator = intArrayOf(0, 0, 0, 0)  // Size-4 array for the 4 categories of Meals
 	var mode = BREAKFAST_CAT            // defaults to viewing breakfast
 	var position: Int = 0               // easier way to hold position data, instead of passing
 	var isMealMode = true               // defaults to meals, not sides
 }
+
 interface ActivityInterface {
 	fun updateRecyclerDate(smoothTransition: Boolean, date: Long)
 	fun updateRecyclerMP(smoothTransition: Boolean)
@@ -67,13 +71,17 @@ interface ActivityInterface {
 	fun fragmentTransaction(fragment: Fragment, tag: String)
 	fun saveDefaultFiles()
 }
+
 interface RecyclerClickListener {
 	fun onClick(view: View, position: Int)
 }
+
 interface RecyclerLongClickListener {
 	fun onLongClick(view: View, position: Int)
 }
+
 var mealPlan = MealPlanData()
+
 class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuItemClickListener {
 	private lateinit var activityBinding: ActivityMainBinding
 	override fun onCreate(savedInstanceState: Bundle?) {
@@ -88,7 +96,7 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 		}
 		// load asset
 		if (!assetsLoaded) {
-		//	this.deleteFile("23_2021") // delete old files, for development
+			//	this.deleteFile("23_2021") // delete old files, for development
 
 			var inputStream: InputStream =
 					try {
@@ -167,8 +175,15 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 				showPopup(view, position)
 			}
 		}
+		val mpLongClickListener = object : RecyclerLongClickListener {
+			override fun onLongClick(view: View, position: Int) {
+				val data = ClipData.newPlainText("", "m$position")
+				val shadowBuilder = View.DragShadowBuilder(view)
+				view.startDrag(data, shadowBuilder, view, 0)
+			}
+		}
 		binding.recyclerMP.layoutManager = LinearLayoutManager(this)
-		binding.recyclerMP.adapter = RecyclerAdapterMealPlan(mpClickListener, binding.recyclerMP)
+		binding.recyclerMP.adapter = RecyclerAdapterMealPlan(mpClickListener, mpLongClickListener, binding.recyclerMP)
 		val ithMP = setMPTouchHelper(binding.recyclerMP, binding.recyclerDate)  // it's called MPTouchHelper because
 		ithMP.attachToRecyclerView(binding.recyclerMP)                          // it's specialized for the mealPlanList object
 		// set up RecyclerRecipes
@@ -181,7 +196,7 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 		}
 		val recLongClickListener = object : RecyclerLongClickListener {
 			override fun onLongClick(view: View, position: Int) {
-				val data = ClipData.newPlainText("", position.toString())
+				val data = ClipData.newPlainText("", "r$position")
 				val shadowBuilder = View.DragShadowBuilder(view)
 				view.startDrag(data, shadowBuilder, view, 0)
 			}
@@ -312,9 +327,11 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 				menu.add(0, v.id, 0, v.context.getString(R.string.context_view_recipe))
 				if (mealPlanList.recipe[pos].isMeal)
 					menu.add(1, v.id, 1, v.context.getString(R.string.context_add_side))
+			} else {
+				menu.add(3, v.id, 2, v.context.getString(R.string.context_blank_recipe))
 			}
 			if (recipeList.recipe.size >= 1)
-				menu.add(2, v.id, 2, v.context.getString(R.string.context_randomize))
+				menu.add(2, v.id, 3, v.context.getString(R.string.context_randomize))
 
 			show()
 		}
@@ -331,12 +348,18 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 			1 -> {
 				if (item.title == getString(R.string.context_add_side))
 					addSideDish(mealPlan.position)
+				mealPlan.isMealMode = false
+				activityBinding.contentMain.tabsMS.getTabAt(1)!!.select()
 				true
 			}
 			2 -> {
 				if (item.title == getString(R.string.context_randomize)) {
 					randomizeSingleMeal(mealPlan.mode, mealPlan.position)
 				}
+				true
+			}
+			3 -> {
+				// TODO: Add dialog for adding title!
 				true
 			}
 			else -> {
@@ -547,10 +570,6 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 		updateRecyclerMP(true)
 	}
 
-	override fun onDestroy() {
-		super.onDestroy()
-	}
-
 	class RecyclerAdapterRecipes(private val clickListener: RecyclerClickListener,
 	                             private val longClickListener: RecyclerLongClickListener) :
 			RecyclerView.Adapter<RecyclerAdapterRecipes.ViewHolder>() {
@@ -579,7 +598,9 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 		}
 	}
 
-	class RecyclerAdapterMealPlan(private val clickListener: RecyclerClickListener, private val recycler: RecyclerView) :
+	class RecyclerAdapterMealPlan(private val clickListener: RecyclerClickListener,
+	                              private val longClickListener: RecyclerLongClickListener,
+	                              private val recycler: RecyclerView) :
 			RecyclerView.Adapter<RecyclerAdapterMealPlan.ViewHolder>() {
 		class ViewHolder(v: View) : RecyclerView.ViewHolder(v) {
 			private val tvItem: TextView = v.findViewById(R.id.tvItem)
@@ -603,12 +624,18 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 
 		override fun onBindViewHolder(holder: ViewHolder, position: Int) {
 			holder.bind(position)
-			holder.itemView.setOnClickListener { view -> clickListener.onClick(view, holder.adapterPosition) }
+			holder.itemView.setOnClickListener { view ->
+				clickListener.onClick(view, holder.adapterPosition)
+			}
+			holder.itemView.setOnLongClickListener { view ->
+				longClickListener.onLongClick(view, holder.adapterPosition)
+				true
+			}
 			holder.itemView.setOnDragListener(SetDragListener(position, recycler))
 		}
 	}
 
-	class RecyclerAdapterDate() :
+	class RecyclerAdapterDate :
 			RecyclerView.Adapter<RecyclerAdapterDate.ViewHolder>() {
 		class ViewHolder(v: View) : RecyclerView.ViewHolder(v) {
 			val tvItem: TextView = v.findViewById(R.id.tvItem)
@@ -721,14 +748,25 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 			}
 			if (event.action == DragEvent.ACTION_DROP) {
 				val item: ClipData.Item = event.clipData.getItemAt(0)
-	// TODO: Test what happens when dropped inside the masterMealPlanList view
-				val posOfDragged: Int = item.text.toString().toInt()
+				val parsePassed = item.text.toString()
+				val posOfDragged: Int = parsePassed.drop(1).toInt()
 				val pos = posOfView
-				mealPlanList.recipe[pos].name = recipeList.recipe[posOfDragged].name
-				mealPlanList.recipe[pos].ingredients = recipeList.recipe[posOfDragged].ingredients
-				mealPlanList.recipe[pos].instructions = recipeList.recipe[posOfDragged].instructions
-				mealPlanList.recipe[pos].cat = recipeList.recipe[posOfDragged].cat
-				recycler.adapter!!.notifyItemChanged(posOfView)
+
+				if (parsePassed[0] == 'r') {
+					mealPlanList.recipe[pos].name = recipeList.recipe[posOfDragged].name
+					mealPlanList.recipe[pos].ingredients = recipeList.recipe[posOfDragged].ingredients
+					mealPlanList.recipe[pos].instructions = recipeList.recipe[posOfDragged].instructions
+					mealPlanList.recipe[pos].cat = recipeList.recipe[posOfDragged].cat
+					recycler.adapter!!.notifyItemChanged(posOfView)
+				} else {
+					val mealCopy1 = mealPlanList.recipe[pos].isMeal
+					val mealCopy2 = mealPlanList.recipe[posOfDragged].isMeal
+					Collections.swap(mealPlanList.recipe, pos, posOfDragged)
+					mealPlanList.recipe[pos].isMeal = mealCopy1             // swap isMeal to original
+					mealPlanList.recipe[posOfDragged].isMeal = mealCopy2    // since we don't want to change meal type when swapping
+					recycler.adapter!!.notifyItemRangeChanged(0, mealPlanList.recipe.size)
+				}
+
 				return true
 			} else {
 				return false
@@ -736,3 +774,16 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 		}
 	}
 }
+
+// TODO: Figure out Snacks and Desserts, probably have to be a separate category or with side meals
+// TODO: Attach URL to recipes loaded from site, figure out the JSON
+// TODO: MealPlanner icon/logo
+// TODO: Font and Font Size
+// TODO: Border between EditRecipe and WebView
+// TODO: Figure out why ShadowBuilder from the MealPlanList is putting the shadow on the left
+// TODO: Put a checkmark right next to RecipeRecycler to allow seeing all recipe categories or not, maybe a checkmark per category (Breakfast, Lunch, Dinner, Snacks)
+
+// TODO: AdBar on the bottom?
+// TODO: Maybe add function where you can load recipes FROM the WebView, drag and drop link into an area, area transforms into EditRecipe, then once saved it transforms back into the area
+// TODO: Database that matches an email with a JSON + the Week#_Year# (example: 22_2021), shoppingList.json, savedRecipes.json, defaultSettings
+// TODO: Themes of colors, maybe premium?
