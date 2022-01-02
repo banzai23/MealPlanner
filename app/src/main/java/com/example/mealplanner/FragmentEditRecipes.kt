@@ -15,7 +15,7 @@ import kotlinx.serialization.json.Json
 import java.util.*
 
 class EditRecipeFragment(position: Int,
-                         private val editMaster: Boolean,
+                         private val editList: Recipe,
                          private val launchedFromMainActivity: Boolean,
                          private val deleteOnCancel: Boolean,
                          private val url: String) : Fragment(R.layout.fragment_edit_recipes) {
@@ -49,12 +49,6 @@ class EditRecipeFragment(position: Int,
 			//			WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 			// doesn't work try other things to hide keyboard
 		}
-
-		val editList: Recipe =
-				if (editMaster)
-					masterRecipeList
-				else
-					recipeList
 
 		binding.etTitle.setText(editList.recipe[pos].name)
 		binding.etRecipe.setText(editList.recipe[pos].ingredients)
@@ -187,16 +181,21 @@ class EditRecipeFragment(position: Int,
 	private fun exitEditRecipes() {
 		val imm: InputMethodManager = requireContext().getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
 		imm.hideSoftInputFromWindow(requireView().windowToken, 0)
-		if (launchedFromMainActivity)
-			updateMainRec.updateRecyclerRecipes(false)
-		else
-			updateRecipeRec.updateRecycler()
 
 		requireActivity().supportFragmentManager.popBackStack()
 	}
 
 	override fun onDestroyView() {
 		super.onDestroyView()
+
+		if (masterRecipeList.recipe[pos].name == "")    // delete recipe if back button pressed and
+			masterRecipeList.recipe.removeAt(pos)
+
+		if (launchedFromMainActivity)   // TODO: Test this
+			updateMainRec.updateRecyclerRecipes(false)
+		else
+			updateRecipeRec.updateRecycler()
+
 		_binding = null
 	}
 }

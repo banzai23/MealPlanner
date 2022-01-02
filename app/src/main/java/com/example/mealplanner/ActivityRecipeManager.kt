@@ -1,5 +1,6 @@
 package com.example.mealplanner
 
+import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.DialogInterface
 import android.content.Intent
@@ -21,6 +22,7 @@ interface RecipeActivityInterface {
 	fun updateRecycler()
 }
 
+@SuppressLint("NotifyDataSetChanged")
 class RecipeManagerActivity : AppCompatActivity(), RecipeActivityInterface {
 	private var _binding: ActivityRecipeManagerBinding? = null
 	override fun onCreate(savedInstanceState: Bundle?) {
@@ -169,7 +171,7 @@ class RecipeManagerActivity : AppCompatActivity(), RecipeActivityInterface {
 					findFrag,
 					"editRecipe")
 		} else {
-			transaction.add(R.id.rm_root, EditRecipeFragment(pos, true,
+			transaction.add(R.id.rm_root, EditRecipeFragment(pos, masterRecipeList,
 					false, deleteOnCancel, url), "editRecipe")
 			transaction.addToBackStack(null)
 		}

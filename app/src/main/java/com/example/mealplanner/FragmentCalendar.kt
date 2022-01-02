@@ -62,7 +62,7 @@ class CalendarFragment : Fragment(R.layout.fragment_calendar) {
 			try {
 				inputStream = requireContext().openFileInput(filename)
 				val inputString = inputStream.bufferedReader().use { it.readText() }
-				masterMealPlanList = Json.decodeFromString(inputString)
+				masterMealPlanList = jsonFormat.decodeFromString(inputString)
 			} catch (e: FileNotFoundException) {
 				masterMealPlanList.breakfast.clear()
 				masterMealPlanList.lunch.clear()

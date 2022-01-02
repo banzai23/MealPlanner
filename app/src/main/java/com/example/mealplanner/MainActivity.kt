@@ -1,5 +1,6 @@
 package com.example.mealplanner
 
+import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.*
 import android.os.Bundle
@@ -43,12 +44,17 @@ lateinit var mealPlanList: Recipe           // for RecyclerMealPlan
 
 var assetsLoaded: Boolean = false
 
+val jsonFormat = Json {ignoreUnknownKeys = true}
+
 @Serializable
 data class Recipe(var recipe: MutableList<RecipeX>)
 
 @Serializable
-data class RecipeX(var name: String = "", var ingredients: String = "",
-                   var instructions: String = "", var cat: Int, var isMeal: Boolean)
+data class RecipeX(var name: String = "",
+                   var ingredients: String = "",
+                   var instructions: String = "",
+                   var cat: Int,
+                   var isMeal: Boolean)
 
 @Serializable
 data class MealPlan(var breakfast: MutableList<RecipeX>,
@@ -82,6 +88,7 @@ interface RecyclerLongClickListener {
 
 var mealPlan = MealPlanData()
 
+@SuppressLint("NotifyDataSetChanged")
 class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuItemClickListener {
 	private lateinit var activityBinding: ActivityMainBinding
 	override fun onCreate(savedInstanceState: Bundle?) {
@@ -112,7 +119,7 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 				inputStream = this.resources.openRawResource(R.raw.savedrecipes)
 				inputString = inputStream.bufferedReader().readText()
 			}
-			masterRecipeList = Json.decodeFromString(inputString)   // load to the variable from the file
+			masterRecipeList = jsonFormat.decodeFromString(inputString)   // load to the variable from the file
 			masterRecipeList.recipe.sortBy { it.toString() }    // sort alphabetically, just in case they aren't already
 
 			recipeList = Recipe(mutableListOf())    // initializing recipeList
@@ -123,7 +130,7 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 				val filename: String = gc.get(Calendar.WEEK_OF_YEAR).toString() + "_" + gc.get(Calendar.YEAR).toString()
 				inputStream = this.openFileInput(filename)
 				inputString = inputStream.bufferedReader().readText()
-				masterMealPlanList = Json.decodeFromString(inputString)
+				masterMealPlanList = jsonFormat.decodeFromString(inputString)
 			} catch (e: FileNotFoundException) {
 				while (gc.get(Calendar.DAY_OF_WEEK) != 1)
 					gc.roll(GregorianCalendar.DAY_OF_YEAR, false)
@@ -189,8 +196,7 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 		// set up RecyclerRecipes
 		val recClickListener = object : RecyclerClickListener {
 			override fun onClick(view: View, position: Int) {
-				fragmentTransaction(EditRecipeFragment(position,
-						false, true, false, ""),
+				fragmentTransaction(ViewRecipesFragment(position),
 						"editRecipe")
 			}
 		}
@@ -465,10 +471,16 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 			}
 			DINNER_CAT -> {
 				for (x in 0 until masterRecipeList.recipe.size) {
-					if (mealPlan.isMealMode && masterRecipeList.recipe[x].isMeal)
-						recipeList.recipe.add(masterRecipeList.recipe[x])
-					else if (!mealPlan.isMealMode && !masterRecipeList.recipe[x].isMeal)
-						recipeList.recipe.add(masterRecipeList.recipe[x])
+				val cat = masterRecipeList.recipe[x].cat
+				if (cat == DINNER_CAT ||
+					cat == DINNER_CAT + LUNCH_CAT ||
+					cat == DINNER_CAT + BREAKFAST_CAT ||
+					cat == BREAKFAST_CAT + LUNCH_CAT + DINNER_CAT) {
+						if (mealPlan.isMealMode && masterRecipeList.recipe[x].isMeal)
+							recipeList.recipe.add(masterRecipeList.recipe[x])
+						else if (!mealPlan.isMealMode && !masterRecipeList.recipe[x].isMeal)
+							recipeList.recipe.add(masterRecipeList.recipe[x])
+					}
 				}
 			}
 			SNACK_CAT -> {
@@ -775,7 +787,6 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 	}
 }
 
-// TODO: Figure out Snacks and Desserts, probably have to be a separate category or with side meals
 // TODO: Attach URL to recipes loaded from site, figure out the JSON
 // TODO: MealPlanner icon/logo
 // TODO: Font and Font Size
@@ -783,7 +794,10 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 // TODO: Figure out why ShadowBuilder from the MealPlanList is putting the shadow on the left
 // TODO: Put a checkmark right next to RecipeRecycler to allow seeing all recipe categories or not, maybe a checkmark per category (Breakfast, Lunch, Dinner, Snacks)
 
+// TODO: Settings: Show Snacks, Starting Week Sun or Mon,
+
 // TODO: AdBar on the bottom?
 // TODO: Maybe add function where you can load recipes FROM the WebView, drag and drop link into an area, area transforms into EditRecipe, then once saved it transforms back into the area
 // TODO: Database that matches an email with a JSON + the Week#_Year# (example: 22_2021), shoppingList.json, savedRecipes.json, defaultSettings
 // TODO: Themes of colors, maybe premium?
+// TODO: Figure out Desserts, probably have to be a separate category or with side meals

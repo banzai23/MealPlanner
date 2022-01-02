@@ -1,5 +1,6 @@
 package com.example.mealplanner
 
+import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Context
 import android.content.DialogInterface
@@ -23,6 +24,7 @@ import java.util.*
 data class UndoList(val list: MutableList<UndoListX>)
 data class UndoListX(val text: String, val position: Int)
 
+@SuppressLint("NotifyDataSetChanged")
 class ShoppingListActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListener {
 	private var _binding: ActivityShoppingListBinding? = null
 	lateinit var listClickListener: RecyclerClickListener
@@ -130,7 +132,7 @@ class ShoppingListActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListe
 					return false
 				}
 		val inputString = inputStream.bufferedReader().readText()
-		val ingredients: MutableList<String> = Json.decodeFromString(inputString)
+		val ingredients: MutableList<String> = jsonFormat.decodeFromString(inputString)
 		if (allIngredients.isNotEmpty())
 			allIngredients.clear()
 		allIngredients.addAll(ingredients)
