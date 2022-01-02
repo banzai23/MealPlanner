@@ -267,6 +267,11 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 		})
 	}
 
+	override fun onDestroy() {
+		super.onDestroy()
+		saveDefaultFiles()
+	}
+
 	override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
 		R.id.action_new -> {
 			fragmentTransaction(CalendarFragment(), "calendar")
