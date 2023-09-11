@@ -16,7 +16,6 @@ import com.example.mealplanner.databinding.ActivityMainBinding
 import com.google.android.material.tabs.TabLayout
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.io.FileNotFoundException
@@ -187,7 +186,7 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 		// set up RecyclerRecipes
 		val recClickListener = object : RecyclerClickListener {
 			override fun onClick(view: View, position: Int) {
-				fragmentTransaction(ViewRecipesFragment(position),
+				fragmentTransaction(ViewRecipesFragment(position, true),
 						"viewRecipe")
 			}
 		}
@@ -345,7 +344,7 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 		return when (item.groupId) {
 			0 -> {
 				if (mealPlanList.recipe[mealPlan.position].name != DEFAULT_EMPTY_RECIPE) {
-					fragmentTransaction(ViewRecipesFragment(mealPlan.position), "viewRecipe")
+					fragmentTransaction(ViewRecipesFragment(mealPlan.position, false), "viewRecipe")
 				}
 				true
 			}

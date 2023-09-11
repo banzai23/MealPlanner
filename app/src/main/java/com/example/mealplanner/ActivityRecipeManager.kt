@@ -10,7 +10,6 @@ import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.mealplanner.databinding.ActivityRecipeManagerBinding
-import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -123,7 +122,6 @@ class RecipeManagerActivity : AppCompatActivity(), RecipeActivityInterface {
 		builder.show()
 	}
 
-	@OptIn(DelicateCoroutinesApi::class)
 	private fun onDialogPositiveClick(dialog: DialogInterface, url: String) {
 		_binding!!.progressBar.visibility = View.VISIBLE
 		GlobalScope.launch(Dispatchers.IO) {

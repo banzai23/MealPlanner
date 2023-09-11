@@ -15,7 +15,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mealplanner.databinding.ActivityShoppingListBinding
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.io.FileNotFoundException
@@ -256,7 +255,7 @@ class ShoppingListActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListe
 				getAll[x].startsWith("¾") ->
 					getAll[x] = getAll[x].substringAfter(" ").substringAfter(" ")
 			}
-			getAll[x] = getAll[x].capitalize(Locale.ENGLISH)
+			getAll[x] = getAll[x].capitalized()
 			x++
 		}
 
@@ -265,7 +264,7 @@ class ShoppingListActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListe
 
 	private fun onDialogPositiveClick(dialog: DialogInterface, itemText: String) {
 		if (itemText.isNotEmpty()) {
-			val string = itemText.trim().capitalize(Locale.ENGLISH)
+			val string = itemText.trim().capitalized()
 			allIngredients.add(string)
 			_binding!!.recyclerShoppingList.adapter!!.notifyDataSetChanged()
 			dialog.dismiss()
@@ -274,7 +273,7 @@ class ShoppingListActivity : AppCompatActivity(), PopupMenu.OnMenuItemClickListe
 
 	private fun onDialogEdit(dialog: DialogInterface, pos: Int, text: String) {
 		if (text.isNotBlank()) {
-			allIngredients[pos] = text.trim().capitalize(Locale.ENGLISH)
+			allIngredients[pos] = text.trim().capitalized()
 			_binding!!.recyclerShoppingList.adapter!!.notifyDataSetChanged()
 		}
 		dialog.dismiss()

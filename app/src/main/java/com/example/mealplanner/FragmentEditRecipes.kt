@@ -12,7 +12,6 @@ import com.example.mealplanner.databinding.FragmentEditRecipesBinding
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import java.util.*
 
 class EditRecipeFragment(position: Int,
                          private val editList: Recipe,
@@ -145,7 +144,7 @@ class EditRecipeFragment(position: Int,
 			exitEditRecipes()
 		}
 		binding.btnSave.setOnClickListener {
-			var name = binding.etTitle.text.toString().capitalize(Locale.ENGLISH)
+			var name = binding.etTitle.text.toString().capitalized()
 			if (name == "") {
 				Snackbar.make(binding.etTitle, getString(R.string.warn_noTitle), Snackbar.LENGTH_LONG).show()
 			} else {
