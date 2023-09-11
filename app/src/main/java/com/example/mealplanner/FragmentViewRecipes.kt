@@ -13,9 +13,9 @@ class ViewRecipesFragment(position: Int) : Fragment(R.layout.fragment_view_recip
 		val binding = FragmentViewRecipesBinding.bind(view)
 		_binding = binding
 
-		binding.tvName.text = mealPlanList.recipe[pos].name
-		binding.tvIngredients.text = mealPlanList.recipe[pos].ingredients
-		binding.tvInstructions.text = mealPlanList.recipe[pos].instructions
+		binding.tvName.text = masterRecipeList.recipe[pos].name
+		binding.tvIngredients.text = masterRecipeList.recipe[pos].ingredients
+		binding.tvInstructions.text = masterRecipeList.recipe[pos].instructions
 
 		binding.btnBack.setOnClickListener {
 			requireActivity().supportFragmentManager.popBackStack()

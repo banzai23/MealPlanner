@@ -51,6 +51,7 @@
     <string name="context_randomize">Pick New Random Recipe</string>
     <string name="context_edit_list">Edit</string>
     <string name="context_blank_recipe">Add Title Only; No Recipe</string>
+    <string name="context_delete_side">Delete Side Dish</string>
     <!-- warning strings -->
     <string name="warn_noCat">You must save under at least 1 category</string>
     <string name="warn_noTitle">You must have a name for your recipe</string>

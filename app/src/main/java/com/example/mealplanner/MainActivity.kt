@@ -13,11 +13,8 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.mealplanner.databinding.ActivityMainBinding
-import com.google.android.gms.common.GoogleApiAvailability
-import com.google.android.gms.common.GooglePlayServicesNotAvailableException
-import com.google.android.gms.common.GooglePlayServicesRepairableException
-import com.google.android.gms.security.ProviderInstaller
 import com.google.android.material.tabs.TabLayout
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
@@ -88,19 +85,13 @@ interface RecyclerLongClickListener {
 
 var mealPlan = MealPlanData()
 
+@ExperimentalSerializationApi
 @SuppressLint("NotifyDataSetChanged")
 class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuItemClickListener {
 	private lateinit var activityBinding: ActivityMainBinding
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
 
-		try {
-			ProviderInstaller.installIfNeeded(this)
-		} catch (e: GooglePlayServicesRepairableException) {
-			GoogleApiAvailability.getInstance()
-					.showErrorNotification(this, e.connectionStatusCode)
-		} catch (e: GooglePlayServicesNotAvailableException) {
-		}
 		// load asset
 		if (!assetsLoaded) {
 			//	this.deleteFile("23_2021") // delete old files, for development
@@ -197,7 +188,7 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 		val recClickListener = object : RecyclerClickListener {
 			override fun onClick(view: View, position: Int) {
 				fragmentTransaction(ViewRecipesFragment(position),
-						"editRecipe")
+						"viewRecipe")
 			}
 		}
 		val recLongClickListener = object : RecyclerLongClickListener {
@@ -343,6 +334,8 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 			}
 			if (recipeList.recipe.size >= 1)
 				menu.add(2, v.id, 3, v.context.getString(R.string.context_randomize))
+			if (!mealPlanList.recipe[pos].isMeal)
+				menu.add(4, v.id, 4, v.context.getString(R.string.context_delete_side))
 
 			show()
 		}
@@ -373,6 +366,10 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 				// TODO: Add dialog for adding title!
 				true
 			}
+			4 -> {
+				deleteSideDish(mealPlan.position)
+				true
+			}
 			else -> {
 				super.onContextItemSelected(item)
 			}
@@ -386,6 +383,7 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 		}
 	}
 
+	@Deprecated("Deprecated in Java")
 	override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
 		super.onActivityResult(requestCode, resultCode, data)
 		saveDefaultFiles()
@@ -549,6 +547,30 @@ class MainActivity : AppCompatActivity(), ActivityInterface, PopupMenu.OnMenuIte
 		mealPlanList.recipe[pos].cat = recipeList.recipe[random].cat
 
 		updateRecyclerMP(true)
+	}
+
+	private fun deleteSideDish(pos: Int) {
+		when (mealPlan.mode) {
+			BREAKFAST_CAT -> {
+				masterMealPlanList.breakfast.removeAt(pos)
+				mealPlanList.recipe = masterMealPlanList.breakfast
+			}
+			LUNCH_CAT -> {
+				masterMealPlanList.lunch.removeAt(pos)
+				mealPlanList.recipe = masterMealPlanList.lunch
+			}
+			DINNER_CAT -> {
+				masterMealPlanList.dinner.removeAt(pos)
+				mealPlanList.recipe = masterMealPlanList.dinner
+			}
+			SNACK_CAT -> {
+				masterMealPlanList.snack.removeAt(pos)
+				mealPlanList.recipe = masterMealPlanList.snack
+			}
+		}
+
+		updateRecyclerMP(false)
+		updateRecyclerDate(false, masterMealPlanList.startDate)
 	}
 
 	private fun randomizeMealPlan(mealMode: Int) {
